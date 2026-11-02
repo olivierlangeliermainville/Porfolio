@@ -1,0 +1,22 @@
+---
+import { profile, socials } from '@/data/site';
+import Button from '@/components/Common/Button.vue';
+import Text from '@/components/Common/Text.vue';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-border border-t">
+  <div class="container-page flex flex-col gap-xs py-m md:flex-row md:items-center md:justify-between">
+    <Text size="body-2" class="text-muted" text={`© ${year} ${profile.name}`} />
+    <ul class="flex flex-wrap gap-s">
+      {
+        socials.map((social) => (
+          <li>
+            <Button button-type="link" text={social.label} to={social.to} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</footer>

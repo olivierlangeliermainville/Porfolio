@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+@import './colors.css';
+@import './fonts.css';
+@import './spacing.css';
+@import './grid.css';
+
+/* `hover:` that skips disabled and inert (`data-inert`) elements, ex: hover-enabled:bg-primary-hover */
+@custom-variant hover-enabled {
+  @media (hover: hover) {
+    &:hover:not(:disabled, [data-inert]) {
+      @slot;
+    }
+  }
+}
+
+@theme {
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --duration-fast: 150ms;
+  --duration-default: 300ms;
+  --duration-slow: 500ms;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-secondary text-body-1;
+  }
+
+  /* Anchored sections land below the sticky nav */
+  section[id] {
+    scroll-margin-top: calc((72 / 16) * 1rem);
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Hidden until `useFade` fades it in, left visible when motion is reduced */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-fade] {
+      opacity: 0;
+    }
+  }
+}
+
+/* Reduced motion: CSS transitions and animations jump to their end (the JS ones check `prefersReducedMotion`) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

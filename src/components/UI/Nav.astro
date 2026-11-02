@@ -1,0 +1,23 @@
+---
+/**
+ * Sticky top bar: your name (back to top) and the section anchors from src/data/site.js
+ */
+import { nav, profile } from '@/data/site';
+---
+
+<header class="bg-background/85 sticky top-0 z-50 backdrop-blur-md">
+  <nav class="container-page flex h-16 items-center justify-between gap-xs" aria-label="Main">
+    <a href="#top" class="text-button font-medium transition-opacity hover:opacity-70">{profile.name}</a>
+    <ul class="flex items-center gap-s">
+      {
+        nav.map((link) => (
+          <li>
+            <a href={link.to} class="text-button text-muted transition-colors hover:text-foreground">
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>

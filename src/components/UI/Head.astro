@@ -1,0 +1,43 @@
+---
+/**
+ * The <head/> of the page, extra tags go in its slot
+ */
+import { Font } from 'astro:assets';
+import { site } from '@/data/site';
+
+// Akkurat Mono is self-hosted (see `fonts` in astro.config.mjs), only Inter comes from Google Fonts
+const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap';
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = site.ogImage ? new URL(site.ogImage, Astro.site) : null;
+---
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content={Astro.generator} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="canonical" href={canonical} />
+
+  <!-- Only the regular is preloaded: it's the one the headings use above the fold -->
+  <Font cssVariable="--font-akkurat-mono" preload={[{ weight: '400', style: 'normal' }]} />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Loaded as `print` then switched to `all`: it doesn't block the first render (`display=swap` shows the fallback meanwhile) -->
+  <link rel="preload" as="style" href={FONTS_URL} />
+  <link rel="stylesheet" href={FONTS_URL} media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href={FONTS_URL} /></noscript>
+
+  <title>{site.title}</title>
+  <meta name="description" content={site.description} />
+
+  <!-- Open Graph and Twitter, for the link previews -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:title" content={site.title} />
+  <meta property="og:description" content={site.description} />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+  <slot />
+</head>

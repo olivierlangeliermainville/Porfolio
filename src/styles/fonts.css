@@ -1,0 +1,59 @@
+/*
+ * Type scale used by <Text size="..."/>. Each size bundles font-size, line-height, letter-spacing
+ * and weight, so `text-heading-1` alone gives the full style. The family is applied by <Text/>.
+ *
+ * Sizes scale linearly from their mobile value at 375px to their desktop value at 1440px, and stay
+ * fixed outside that range: clamp(mobile, mobile + (desktop - mobile) * --fluid, desktop).
+ *
+ * The primary font is self-hosted from src/assets/fonts/ (see `fonts` in astro.config.mjs), the
+ * secondary comes from Google Fonts (see UI/Head.astro). To swap them, change those and the
+ * families below.
+ */
+:root {
+  /* 0px at a 375px viewport, 1px at 1440px: multiplied by a px difference, gives the fluid part */
+  --fluid: calc((100vw - 375px) / (1440 - 375));
+}
+
+@theme {
+  /* Set by <Font/>, it already includes the fallbacks */
+  --font-primary: var(--font-akkurat-mono);
+  --font-secondary: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Primary font */
+  --text-heading-1: clamp(calc((56 / 16) * 1rem), calc((56 / 16) * 1rem + 88 * var(--fluid)), calc((144 / 16) * 1rem));
+  --text-heading-1--line-height: 0.95;
+  --text-heading-1--letter-spacing: -0.02em;
+  --text-heading-1--font-weight: 400;
+
+  --text-heading-2: clamp(calc((40 / 16) * 1rem), calc((40 / 16) * 1rem + 40 * var(--fluid)), calc((80 / 16) * 1rem));
+  --text-heading-2--line-height: 1;
+  --text-heading-2--letter-spacing: -0.015em;
+  --text-heading-2--font-weight: 400;
+
+  --text-heading-3: clamp(calc((28 / 16) * 1rem), calc((28 / 16) * 1rem + 12 * var(--fluid)), calc((40 / 16) * 1rem));
+  --text-heading-3--line-height: 1.05;
+  --text-heading-3--letter-spacing: -0.01em;
+  --text-heading-3--font-weight: 400;
+
+  /* Secondary font */
+  --text-body-1: clamp(calc((16 / 16) * 1rem), calc((16 / 16) * 1rem + 2 * var(--fluid)), calc((18 / 16) * 1rem));
+  --text-body-1--line-height: 1.5;
+  --text-body-1--letter-spacing: 0;
+  --text-body-1--font-weight: 400;
+
+  --text-body-2: calc((14 / 16) * 1rem);
+  --text-body-2--line-height: 1.45;
+  --text-body-2--letter-spacing: 0;
+  --text-body-2--font-weight: 400;
+
+  /* Small uppercase labels, ex: section eyebrows, years */
+  --text-label: calc((12 / 16) * 1rem);
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.08em;
+  --text-label--font-weight: 500;
+
+  --text-button: calc((14 / 16) * 1rem);
+  --text-button--line-height: 1;
+  --text-button--letter-spacing: 0.01em;
+  --text-button--font-weight: 500;
+}

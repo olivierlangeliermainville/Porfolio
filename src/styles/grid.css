@@ -1,0 +1,17 @@
+/*
+ * Layout grid: columns separated by the gutter (see spacing.css)
+ * The number is the column count, ex: md:grid-layout-12, a nested md:grid-layout-6 inside a col-span-6
+ */
+@utility grid-layout-* {
+  display: grid;
+  grid-template-columns: repeat(--value(integer), minmax(0, 1fr));
+  column-gap: var(--spacing-gutter);
+}
+
+/* Page width container with the side margins */
+@utility container-page {
+  width: 100%;
+  max-width: calc((1600 / 16) * 1rem);
+  margin-inline: auto;
+  padding-inline: var(--spacing-page-x);
+}

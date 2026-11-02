@@ -1,0 +1,40 @@
+---
+import { profile } from '@/data/site';
+import Button from '@/components/Common/Button.vue';
+import Text from '@/components/Common/Text.vue';
+---
+
+<section class="container-page flex min-h-[calc(100svh-4rem)] flex-col justify-end gap-l pt-xl pb-l md:pb-xl">
+  <div class="flex flex-col gap-xs" data-fade>
+    <Text size="label" class="text-muted" text={`${profile.role} — ${profile.location}`} />
+    {
+      profile.availability && (
+        <p class="text-body-2 flex items-center gap-xxs">
+          <span class="relative flex size-2">
+            <span class="absolute inline-flex size-full animate-ping rounded-full bg-[#3ccf6e] opacity-60" />
+            <span class="relative inline-flex size-2 rounded-full bg-[#3ccf6e]" />
+          </span>
+          {profile.availability}
+        </p>
+      )
+    }
+  </div>
+
+  <Text
+    tag-name="h1"
+    size="heading-1"
+    html
+    text={profile.headline}
+    class="max-w-[14ch] [&_em]:text-accent"
+    data-fade
+    data-delay="0.1"
+  />
+
+  <div class="grid-layout-1 gap-y-s md:grid-layout-12 md:items-end" data-fade data-delay="0.2">
+    <Text tag-name="p" size="body-1" text={profile.intro} class="text-muted max-w-[46ch] md:col-span-6" />
+    <div class="flex flex-wrap gap-xxs md:col-span-6 md:justify-end">
+      <Button text="See my work" to="#work" icon-right="arrow" />
+      <Button button-type="secondary" text="Get in touch" to={`mailto:${profile.email}`} />
+    </div>
+  </div>
+</section>

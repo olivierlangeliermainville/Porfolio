@@ -1,0 +1,27 @@
+---
+import { profile, socials } from '@/data/site';
+import Button from '@/components/Common/Button.vue';
+import Text from '@/components/Common/Text.vue';
+---
+
+<section id="contact" class="container-page border-border flex flex-col gap-l border-t py-section">
+  <Text size="label" class="text-muted" text="Contact" data-fade data-scroll />
+  <a
+    href={`mailto:${profile.email}`}
+    class="text-heading-2 font-primary w-fit break-all transition-colors duration-(--duration-default) hover:text-accent"
+    data-fade
+    data-scroll
+    data-delay="0.1"
+  >
+    {profile.email}
+  </a>
+  <ul class="flex flex-wrap gap-xxs" data-fade data-scroll data-delay="0.2">
+    {
+      socials.map((social) => (
+        <li>
+          <Button button-type="secondary" text={social.label} to={social.to} icon-left={social.icon} />
+        </li>
+      ))
+    }
+  </ul>
+</section>

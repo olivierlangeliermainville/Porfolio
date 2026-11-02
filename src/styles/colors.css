@@ -1,0 +1,34 @@
+/*
+ * Palette. Components use the roles (background, foreground, primary...), not the raw colors,
+ * so re-theming the site means changing the values here only.
+ */
+@theme static {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Raw colors */
+  --color-ink: #16161a;
+  --color-paper: #f4f2ee;
+  --color-white: #ffffff;
+  --color-orange: #ff5c39;
+  --color-grey: #8a8780;
+
+  /* Page */
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  /* Secondary text, captions */
+  --color-muted: rgb(22 22 26 / 0.6);
+  --color-border: rgb(22 22 26 / 0.15);
+  --color-focus: var(--color-orange);
+
+  /* Buttons */
+  --color-primary: var(--color-ink);
+  --color-primary-hover: #34343b;
+  --color-on-primary: var(--color-paper);
+  --color-accent: var(--color-orange);
+  --color-on-accent: var(--color-ink);
+
+  /* Shown behind images before they load */
+  --color-placeholder: rgb(22 22 26 / 0.08);
+}
