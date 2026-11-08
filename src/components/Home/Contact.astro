@@ -1,27 +1,149 @@
 ---
-import { profile, socials } from '@/data/site';
+/**
+ * The email and socials side by side on the two columns around the center gutter, the title very
+ * large on one line in a white band under them, like the hero's name, and a closing row.
+ * The whole section fits in a screen.
+ */
+import { contact, profile, socials } from '@/data/site';
+import { formatIndex, padNumber } from '@/lib/format';
 import Button from '@/components/Common/Button.vue';
+import Clock from '@/components/Common/Clock.astro';
+import Icon from '@/components/Common/Icon.vue';
 import Text from '@/components/Common/Text.vue';
+
+// Same look as the project infos (ProjectInfo.astro): a caption and a value on a line
+const ROW = 'border-line flex items-baseline justify-between gap-xs border-b bg-white p-xxxs';
 ---
 
-<section id="contact" class="container-page border-border flex flex-col gap-l border-t py-section">
-  <Text size="label" class="text-muted" text="Contact" data-fade data-scroll />
-  <a
-    href={`mailto:${profile.email}`}
-    class="text-heading-2 font-primary w-fit break-all transition-colors duration-(--duration-default) hover:text-accent"
-    data-fade
-    data-scroll
-    data-delay="0.1"
-  >
-    {profile.email}
-  </a>
-  <ul class="flex flex-wrap gap-xxs" data-fade data-scroll data-delay="0.2">
-    {
-      socials.map((social) => (
-        <li>
-          <Button button-type="secondary" text={social.label} to={social.to} icon-left={social.icon} />
-        </li>
-      ))
-    }
-  </ul>
+<!-- Ends on the page margin, like the nav starts -->
+<section id="contact" class="group/contact pt-section pb-page-x">
+  <h2 class="sr-only">{contact.title}</h2>
+
+  <!-- 1px in from the grid lines, like the ledger rows of Work and Trials -->
+  <div class="container-page grid-layout-12 gap-y-l pb-xl">
+    <div class="col-span-6 mx-px flex flex-col gap-xxs self-start md:col-span-3 md:col-start-4 md:row-start-1">
+      <dl class="border-line border-t">
+        {contact.status && (
+          <div class={ROW}>
+            <Text tag-name="dt" size="caption" text={contact.statusLabel} />
+            <Text tag-name="dd" size="mono" class="flex items-center gap-xxs text-right">
+              <span class="size-1.5 shrink-0 animate-pulse rounded-full bg-accent" aria-hidden="true" />
+              {contact.status}
+            </Text>
+          </div>
+        )}
+        <div class={ROW}>
+          <Text tag-name="dt" size="caption" text={contact.emailLabel} />
+          <Text tag-name="dd" size="mono" class="min-w-0 text-right">
+            <a
+              href={`mailto:${profile.email}`}
+              class="break-all transition-colors duration-(--duration-fast) hover:text-accent"
+            >
+              {profile.email}
+            </a>
+          </Text>
+        </div>
+        <div class={ROW}>
+          <Text tag-name="dt" size="caption" text={contact.locationLabel} />
+          <Text tag-name="dd" size="mono" class="text-right">
+            {profile.location} - <Clock timeZone={profile.timeZone} />
+          </Text>
+        </div>
+      </dl>
+
+      <div class="flex justify-end gap-xxxs">
+        <!-- Looks like <Button/>, but its label is swapped by the script below -->
+        <button
+          type="button"
+          class="cursor-pointer bg-primary px-xxxs py-[0.1875rem] text-on-primary transition-colors duration-(--duration-fast) hover-enabled:bg-accent hover-enabled:text-on-accent"
+          data-copy={profile.email}
+          data-copied-label={contact.copiedLabel}
+        >
+          <Text size="button" text={contact.copyLabel} data-copy-text />
+        </button>
+        <Button text={contact.writeLabel} to={`mailto:${profile.email}`} icon-right="arrow" />
+      </div>
+      <span class="sr-only" aria-live="polite" data-copy-status></span>
+    </div>
+
+    <div class="col-span-6 mx-px flex flex-col self-start md:col-span-3 md:col-start-7 md:row-start-1">
+      <div class={`${ROW} border-t`}>
+        <Text tag-name="h3" size="caption" text={contact.socialsLabel} />
+        <Text size="caption" text={padNumber(socials.length)} aria-hidden="true" />
+      </div>
+      <ul>
+        {socials.map((social, index) => (
+          <li>
+            <a href={social.to} target="_blank" rel="noopener" class={`${ROW} group/social items-center`}>
+              <Text size="caption" text={formatIndex(index)} aria-hidden="true" />
+              <!-- The icon opens from no width on desktop, pushing the label to the left -->
+              <Text size="mono" class="flex items-center">
+                {social.label}
+                <span class="flex w-[1.6em] justify-end overflow-hidden transition-[width,opacity] duration-(--duration-default) ease-standard group-hover/social:w-[1.6em] group-hover/social:opacity-100 group-focus-visible/social:w-[1.6em] group-focus-visible/social:opacity-100 md:w-0 md:opacity-0">
+                  <Icon name="external" class="size-[1.1em]" />
+                </span>
+                <span class="sr-only">{contact.newWindowLabel}</span>
+              </Text>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <!-- A white band between two lines like the hero's, over the grid lines, with the title in the
+       shared display size (src/styles/fonts.css) in cqw of the page like the name, and pale like
+       every big title -->
+  <div class="border-line relative z-50 border-y bg-white">
+    <div class="container-page flex justify-center whitespace-nowrap @container" aria-hidden="true">
+      <Text size="display" text={contact.title} class="text-ghost pt-[0.06em] text-display uppercase" />
+    </div>
+  </div>
+
+  <div class="container-page">
+    <div class="flex items-center justify-between px-cell pt-xxs">
+      <Text size="mono" text={`© ${new Date().getFullYear()} ${profile.name}`} />
+      <a
+        href="#top"
+        class="group/top flex items-center gap-xxs transition-colors duration-(--duration-fast) hover:text-accent"
+      >
+        <Text size="mono" text={contact.backToTop} />
+        <Icon
+          name="arrow"
+          class="size-[1.1em] -rotate-90 transition-transform duration-(--duration-default) ease-standard group-hover/top:-translate-y-0.5"
+        />
+      </a>
+    </div>
+  </div>
 </section>
+
+<script>
+  // Copies the email, the button says it for a moment
+  const COPIED_DURATION = 2000;
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => {
+    const text = button.querySelector<HTMLElement>('[data-copy-text]');
+    const status = button.closest('section')?.querySelector<HTMLElement>('[data-copy-status]');
+    const label = text?.textContent ?? '';
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const setLabel = (buttonLabel: string, statusLabel: string) => {
+      if (text) text.textContent = buttonLabel;
+      if (status) status.textContent = statusLabel;
+    };
+
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? '');
+      } catch {
+        // No clipboard access (http, permissions): the mailto button is still there
+        return;
+      }
+
+      const copied = button.dataset.copiedLabel ?? '';
+      setLabel(copied, copied);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setLabel(label, ''), COPIED_DURATION);
+    });
+  });
+</script>

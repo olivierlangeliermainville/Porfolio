@@ -29,9 +29,5 @@ const svg = computed(() => {
 </script>
 
 <template>
-  <span
-    class="inline-block size-[1em] shrink-0 leading-0 [&>svg]:size-full"
-    aria-hidden="true"
-    v-html="svg"
-  />
+  <span class="inline-block size-[1em] shrink-0 leading-0 [&>svg]:size-full" aria-hidden="true" v-html="svg" />
 </template>

@@ -1,0 +1,35 @@
+---
+/**
+ * Faint vertical lines behind the page, on the layout grid: on each side of every gutter, every
+ * 3 columns on desktop, every 6 on mobile.
+ *
+ * The center gutter widens with `--grid-center` on :root (see grid.css), ex: the About portrait sets
+ * it to its width: the two center lines follow its edges and the others move out with their
+ * columns. The center lines are their own element, over the content, so they show on the white
+ * blocks they cross once spread.
+ */
+const LINES = [
+  'col-start-1 col-end-7 border-l md:col-start-1 md:col-end-4 md:border-r',
+  'col-start-7 col-end-13 border-r md:col-start-4 md:col-end-7 md:border-r-0 md:border-l',
+  'hidden md:block md:col-start-7 md:col-end-10 md:border-r',
+  'hidden md:block md:col-start-10 md:col-end-13 md:border-x'
+];
+---
+
+<div class="pointer-events-none fixed inset-0 -z-10" aria-hidden="true">
+  <!-- data-grid-lines: the Shader's cells follow this grid -->
+  <div class="container-page grid-layout-12 h-full" data-grid-lines>
+    {LINES.map((line) => (
+      <div class:list={[line, 'border-line row-start-1']} />
+    ))}
+  </div>
+</div>
+
+<!-- Over the content, unlike the others: spread apart they cross the white blocks (Work, Trials)
+     that the other lines run between. 2px wider than the gutter: the lines sit just outside it,
+     like the cells' borders -->
+<div
+  class="border-line pointer-events-none fixed inset-y-0 left-1/2 z-30 w-[calc(max(var(--spacing-gutter),var(--grid-center,0px))+2px)] -translate-x-1/2 border-x"
+  aria-hidden="true"
+  data-grid-center
+/>

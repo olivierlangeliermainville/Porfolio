@@ -4,7 +4,7 @@ import { defineComponent } from 'vue';
 // Each type carries its own look
 const TYPE_CLASS = {
   // Filled, main action
-  primary: 'rounded-full bg-primary px-s py-xs text-on-primary hover-enabled:bg-primary-hover',
+  primary: 'bg-primary px-xxxs py-[0.1875rem] text-on-primary hover-enabled:bg-accent hover-enabled:text-on-accent',
   // Outlined, secondary action
   secondary: 'rounded-full border border-current px-s py-xs hover-enabled:bg-foreground hover-enabled:text-background',
   // Accent color, for the one action that must stand out (ex: contact)
@@ -24,7 +24,6 @@ export default defineComponent({});
 </script>
 
 <script setup>
-import { useSlots } from 'vue';
 import { interactiveTagProps, useInteractiveTag } from '@/composables/useInteractiveTag';
 import { hasSlotContent } from '@/lib/hasSlotContent';
 import Icon from './Icon.vue';
@@ -66,9 +65,11 @@ const props = defineProps({
   newWindowLabel: { type: String, default: '(opens in a new window)' }
 });
 
-const slots = useSlots();
-
-const { tag, props: tagProps, opensNewWindow } = useInteractiveTag({
+const {
+  tag,
+  props: tagProps,
+  opensNewWindow
+} = useInteractiveTag({
   to: () => props.to,
   overrideTag: () => props.overrideTag,
   disabled: () => props.disabled,
@@ -85,21 +86,10 @@ const { tag, props: tagProps, opensNewWindow } = useInteractiveTag({
     class="group/button inline-flex items-center justify-center gap-xxs transition-colors duration-(--duration-fast) disabled:opacity-50"
     :class="[WIDTH_CLASS[width], TYPE_CLASS[buttonType], disabled || isInert ? 'cursor-default' : 'cursor-pointer']"
   >
-    <Icon
-      v-if="iconLeft"
-      :name="iconLeft"
-      class="icon size-[1.15em]"
-    />
+    <Icon v-if="iconLeft" :name="iconLeft" class="icon size-[1.15em]" />
 
-    <Text
-      v-if="text"
-      size="button"
-      :text="text"
-    />
-    <Text
-      v-else-if="hasSlotContent(slots.default?.())"
-      size="button"
-    >
+    <Text v-if="text" size="button" :text="text" />
+    <Text v-else-if="hasSlotContent($slots.default?.())" size="button">
       <slot />
     </Text>
 
@@ -109,10 +99,7 @@ const { tag, props: tagProps, opensNewWindow } = useInteractiveTag({
       class="icon size-[1.15em] transition-transform duration-(--duration-default) ease-standard group-hover/button:translate-x-0.5"
     />
 
-    <span
-      v-if="opensNewWindow"
-      class="sr-only"
-    >
+    <span v-if="opensNewWindow" class="sr-only">
       {{ newWindowLabel }}
     </span>
   </component>

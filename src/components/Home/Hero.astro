@@ -1,40 +1,178 @@
 ---
+/**
+ * Fills the first screen with the nav: a white band with the name between two empty rows
+ */
 import { profile } from '@/data/site';
-import Button from '@/components/Common/Button.vue';
+import Clock from '@/components/Common/Clock.astro';
 import Text from '@/components/Common/Text.vue';
+
+const [roleStart, roleEnd] = profile.role.split(' + ');
 ---
 
-<section class="container-page flex min-h-[calc(100svh-4rem)] flex-col justify-end gap-l pt-xl pb-l md:pb-xl">
-  <div class="flex flex-col gap-xs" data-fade>
-    <Text size="label" class="text-muted" text={`${profile.role} — ${profile.location}`} />
-    {
-      profile.availability && (
-        <p class="text-body-2 flex items-center gap-xxs">
-          <span class="relative flex size-2">
-            <span class="absolute inline-flex size-full animate-ping rounded-full bg-[#3ccf6e] opacity-60" />
-            <span class="relative inline-flex size-2 rounded-full bg-[#3ccf6e]" />
-          </span>
-          {profile.availability}
-        </p>
-      )
-    }
-  </div>
+<section class="flex min-h-[calc(100svh-2rem)] flex-col">
+  <div class="min-h-xl flex-1"></div>
 
-  <Text
-    tag-name="h1"
-    size="heading-1"
-    html
-    text={profile.headline}
-    class="max-w-[14ch] [&_em]:text-accent"
-    data-fade
-    data-delay="0.1"
-  />
+  <!-- Content centered so it stays in the middle while the intro grows the band (see script) -->
+  <div hero-container class="border-line z-50 flex flex-col justify-center border-y bg-white">
+    <div class="container-page grid-layout-12 items-center text-center @container md:text-left">
+      <h1 class="sr-only">{profile.name}</h1>
 
-  <div class="grid-layout-1 gap-y-s md:grid-layout-12 md:items-end" data-fade data-delay="0.2">
-    <Text tag-name="p" size="body-1" text={profile.intro} class="text-muted max-w-[46ch] md:col-span-6" />
-    <div class="flex flex-wrap gap-xxs md:col-span-6 md:justify-end">
-      <Button text="See my work" to="#work" icon-right="arrow" />
-      <Button button-type="secondary" text="Get in touch" to={`mailto:${profile.email}`} />
+      <!-- The name: on one line on desktop, the initials stacked on mobile -->
+      <Text
+        hero-name-desktop
+        size="display"
+        text={profile.displayName}
+        aria-hidden="true"
+        class="text-ghost col-span-12 col-start-1 row-start-1 hidden pt-[0.015em] text-center text-display whitespace-nowrap uppercase md:block"
+      />
+      {[...profile.initials].map((letter, index) => (
+        <Text
+          size="display"
+          text={letter}
+          aria-hidden="true"
+          class="text-ghost col-span-12 col-start-1 py-[0.05em] text-[85cqw] md:hidden"
+          style={{ gridRowStart: index + 1 }}
+        />
+      ))}
+
+      <!-- The texts start a cell in from their grid line, like the rest of the page (--spacing-cell) -->
+      <Text
+        hero-data
+        tag-name="p"
+        size="mono"
+        class="col-span-12 col-start-1 row-start-1 px-cell md:col-span-3 md:col-start-1"
+      >
+        {roleStart}
+        <span class="block text-accent md:inline"> + </span>
+        {roleEnd}
+      </Text>
+      <Text
+        hero-data
+        tag-name="p"
+        size="mono"
+        text={profile.intro}
+        class="col-span-8 col-start-3 row-start-2 px-cell md:col-span-3 md:col-start-5 md:row-start-1"
+      />
+      <Text
+        hero-data
+        tag-name="p"
+        size="mono"
+        class="col-span-12 col-start-1 row-start-3 px-cell md:col-span-3 md:col-start-10 md:row-start-1 md:text-right"
+      >
+        {profile.location} - <Clock timeZone={profile.timeZone} />
+      </Text>
     </div>
   </div>
+
+  <div class="min-h-xl flex-1"></div>
 </section>
+
+<script>
+  import gsap from 'gsap';
+  import { SplitText } from 'gsap/SplitText';
+
+  gsap.registerPlugin(SplitText);
+
+  const name = document.querySelector('[hero-name-desktop]');
+  const container = document.querySelector('[hero-container]');
+  const datas = document.querySelectorAll('[hero-data]');
+
+  if (name && container && datas.length === 3) {
+    // Split once the font is loaded, otherwise the chars are measured with the fallback font
+    document.fonts.ready.then(() => {
+      // Split first: each letter in its own box loses the font's kerning, so the split name is
+      // wider than the plain text and must be fitted as it is
+      const { chars } = SplitText.create(name, { type: 'chars' });
+
+      // Scales the font so the name spans its column exactly, whatever its length (the text width
+      // grows with the font-size). Measured on the letters' layout boxes, which ignore transforms:
+      // a measure of what's on screen would see the scaled down letters and blow up the font
+      const firstChar = chars[0] as HTMLElement;
+      const lastChar = chars.at(-1) as HTMLElement;
+      const fitName = () => {
+        // Hidden on mobile
+        if (!name.clientWidth) return;
+
+        const fontSize = parseFloat(getComputedStyle(name).fontSize);
+        const textWidth = lastChar.offsetLeft + lastChar.offsetWidth - firstChar.offsetLeft;
+        name.style.fontSize = `${(fontSize * name.clientWidth) / textWidth}px`;
+      };
+
+      // Fitted before the letters are measured, then again when the column resizes
+      fitName();
+      new ResizeObserver(fitName).observe(name);
+
+      // Time between the first (center) and last (outer) letter starting
+      const cascade = 0.2;
+
+      // The letters start from the screen center out, by their distance to it
+      // (clientWidth leaves out the scrollbar, like the page layout)
+      const screenCenter = document.documentElement.clientWidth / 2;
+      const distances = chars.map((char) => {
+        const charBox = char.getBoundingClientRect();
+        return screenCenter - (charBox.left + charBox.width / 2);
+      });
+      // 0 on mobile, where the name is hidden (avoids dividing by 0)
+      const maxDistance = Math.max(...distances.map(Math.abs)) || 1;
+
+      // The grid overlay's lines (GridLines.astro), from left to right on screen
+      const gridLines = [...document.querySelectorAll<HTMLElement>('[data-grid-lines] > *, [data-grid-center]')].sort(
+        (a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left
+      );
+
+      // Measured before the band is closed
+      const bandHeight = (container as HTMLElement).offsetHeight;
+      const bandBorder = getComputedStyle(container).borderTopWidth;
+
+      // Hidden right away (the from states render now), then played in sequence
+      gsap.set(container, { overflow: 'hidden' });
+      gsap
+        .timeline()
+        // 1. The grid lines draw from the top. A clip, not a scale: the center ones are centered
+        //    with a translate that a transform would override
+        .fromTo(
+          gridLines,
+          { clipPath: 'inset(0% 0% 100% 0%)' },
+          { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, stagger: 0.1, ease: 'expo.inOut', clearProps: 'clipPath' }
+        )
+        .addLabel('hero', '-=0.2')
+        // 2. The band opens from nothing to its full height. Its borders too, they'd show as a line
+        //    at 0 height. Its content stays centered and clipped while it opens
+        .fromTo(
+          container,
+          { height: 0, borderTopWidth: 0, borderBottomWidth: 0 },
+          {
+            height: bandHeight,
+            borderTopWidth: bandBorder,
+            borderBottomWidth: bandBorder,
+            duration: 0.4,
+            ease: 'expo.out',
+            clearProps: 'height,overflow,borderTopWidth,borderBottomWidth'
+          },
+          'hero'
+        )
+        .addLabel('letters')
+        // 3. The letters drop in from the screen center out, the same reveal as the Work section's
+        //    info. The glyphs fit their boxes, the clip doesn't cut them
+        .fromTo(
+          chars,
+          { yPercent: -100, clipPath: 'inset(100% 0% 0% 0%)' },
+          {
+            yPercent: 0,
+            clipPath: 'inset(0% 0% 0% 0%)',
+            duration: 0.6,
+            ease: 'expo.out',
+            stagger: (index) => (Math.abs(distances[index]) / maxDistance) * cascade
+          },
+          'letters'
+        )
+        // 4. The texts drop in after the letters
+        .fromTo(
+          datas,
+          { yPercent: -100, clipPath: 'inset(100% 0% 0% 0%)' },
+          { yPercent: 0, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.6, stagger: 0.2, ease: 'expo.out' },
+          'letters+=0.4'
+        );
+    });
+  }
+</script>

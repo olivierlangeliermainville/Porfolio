@@ -1,0 +1,89 @@
+---
+/**
+ * The featured projects
+ *
+ * Desktop: the section is one screen tall per project and its frame sticks to the top, over the
+ * band with the index and the active project's title (WorkBand). Scrolling raises a line from the
+ * bottom to the top and slides the names (WorkNames) and the media (WorkMedia) past it. When a
+ * project's first media reaches the line, a switch plays: the old info folds away, the name is
+ * marked, the index and the title roll, the media turn to color, then the new info unfolds.
+ * The behavior is in scripts/, desktop in scripts/desktop.js.
+ *
+ * Mobile: a plain list (WorkMobile).
+ */
+import { projects } from '@/data/projects';
+import { work } from '@/data/site';
+import Text from '@/components/Common/Text.vue';
+import ProjectInfo from '../ProjectInfo.astro';
+import WorkBand from './WorkBand.astro';
+import WorkMedia from './WorkMedia.astro';
+import WorkMobile from './WorkMobile.astro';
+import WorkNames from './WorkNames.astro';
+---
+
+<section
+  id="work"
+  class="container-page @container md:relative md:h-[calc(var(--count)*100svh)]"
+  style={{ '--count': projects.length }}
+  data-work
+>
+  <!-- First in the section on both: it sticks at the bottom of the screen from there -->
+  <WorkBand />
+  <WorkMobile />
+
+  <!-- Desktop -->
+
+  <!-- The frame keeps room for the band at the bottom (`--band-height`, set by the script) -->
+  <div class="sticky top-0 hidden h-svh flex-col pt-xs pb-(--band-height) md:flex" data-work-frame>
+    <!-- On the left half, ending on the center gutter like on mobile (WorkMobile) -->
+    <div class="grid-layout-12">
+      <Text tag-name="h2" text={work.title} class="text-ghost col-span-6 mr-cell text-end normal-case!" />
+    </div>
+
+    <!-- The band starts over these, on desktop (`--band-offset`, set by the script) -->
+    <div class="mt-l grid-layout-12" aria-hidden="true" data-work-columns>
+      {Object.entries(work.columns).map(([key, column]) => (
+        <Text
+          size="caption"
+          text={column}
+          // Name: a line under it, across its column 1px in from the grid lines like the name rows,
+          // the text still at the cell's margin
+          class:list={[
+            'col-span-3',
+            key === 'name' ? 'border-line mx-px pb-1 border-b pl-[calc(var(--spacing-cell)-1px)]' : 'ml-cell'
+          ]}
+        />
+      ))}
+    </div>
+
+    <div class="relative grid-layout-12 min-h-0 flex-1" data-work-stage>
+      <!-- The active line: rises from the bottom to the top, the names slide past it. Clipped at its
+           top only: the names and info go under the labels, not over them. The media aren't, they
+           rise into the labels -->
+      <div class="relative col-span-6 col-start-4 grid-layout-6 [clip-path:inset(0_-100vw_-100vw_-100vw)]">
+        <WorkNames />
+
+        <!-- Info: every project's, stacked in the same cell, only the active one is shown, on its
+             name's row. The line over it extends the name's top border, across the gutter -->
+        <div class="relative col-span-3 grid content-start" data-work-infos>
+          <div class="border-line absolute right-0 -left-gutter -top-px border-t"></div>
+          {projects.map((project) => (
+            <ProjectInfo
+              project={project}
+              class="invisible mx-px self-start opacity-0 [grid-area:1/1]"
+              data-work-info
+            />
+          ))}
+        </div>
+      </div>
+
+      <WorkMedia />
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initWork } from './scripts';
+
+  initWork();
+</script>

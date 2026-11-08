@@ -1,0 +1,33 @@
+---
+/**
+ * A project's name row in the ledger: its title, and its number on the right. A white line 1px in
+ * from each side, so the grid lines behind it stay visible.
+ *
+ * `invert` adds an inverted copy over it, hidden by its clip-path until a script slides it in
+ * (`[data-name-row-invert]`, see Work/scripts/invert.js)
+ *
+ * @example
+ * <NameRow title={project.title} index={index} invert />
+ */
+import { formatIndex } from '@/lib/format';
+
+const { title, index, invert = false } = Astro.props;
+const number = formatIndex(index);
+---
+
+<h3 class="border-line row-title relative mx-px flex justify-between border-y bg-white font-primary uppercase">
+  <span>{title}</span>
+  <span class="text-muted" aria-hidden="true">
+    {number}
+  </span>
+  {invert && (
+    <span
+      class="row-title absolute inset-0 flex justify-between bg-foreground text-white [clip-path:inset(0_100%_0_0)]"
+      aria-hidden="true"
+      data-name-row-invert
+    >
+      <span>{title}</span>
+      <span>{number}</span>
+    </span>
+  )}
+</h3>

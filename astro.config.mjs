@@ -9,26 +9,21 @@ export default defineConfig({
   site: 'https://example.com',
   integrations: [vue()],
   devToolbar: { enabled: false },
-  // Self-hosted fonts from src/assets/fonts/, rendered by <Font/> in UI/Head.astro
+  // Downloaded from Google Fonts at build time and self-hosted, rendered by <Font/> in UI/Head.astro
+  // DM Mono only goes up to 500: heavier weights (800 buttons, semibold <strong>) are synthesized by the browser
   fonts: [
     {
-      provider: fontProviders.local(),
-      name: 'Akkurat Mono',
-      cssVariable: '--font-akkurat-mono',
+      provider: fontProviders.google(),
+      name: 'DM Mono',
+      cssVariable: '--font-dm-mono',
       fallbacks: ['ui-monospace', 'monospace'],
-      options: {
-        variants: [
-          { src: ['./src/assets/fonts/AkkuratMonoTrialWeb-Regular.woff2'], weight: 400, style: 'normal' },
-          { src: ['./src/assets/fonts/AkkuratMonoTrialWeb-Italic.woff2'], weight: 400, style: 'italic' },
-          { src: ['./src/assets/fonts/AkkuratMonoTrialWeb-Bold.woff2'], weight: 700, style: 'normal' },
-          { src: ['./src/assets/fonts/AkkuratMonoTrialWeb-BoldItalic.woff2'], weight: 700, style: 'italic' }
-        ]
-      }
+      weights: [400, 500],
+      styles: ['normal', 'italic']
     }
   ],
   vite: {
     plugins: [tailwindcss()],
     // Pre-bundled at startup so Vite doesn't re-optimize mid-session
-    optimizeDeps: { include: ['gsap', 'gsap/ScrollTrigger'] }
+    optimizeDeps: { include: ['gsap', 'gsap/ScrollTrigger', 'gsap/EasePack', 'lenis'] }
   }
 });

@@ -8,7 +8,12 @@ const SIZE_CLASS = {
   'body-1': 'text-body-1 font-secondary',
   'body-2': 'text-body-2 font-secondary',
   label: 'text-label font-secondary uppercase',
-  button: 'text-button font-secondary'
+  button: 'text-button font-primary uppercase',
+  mono: 'text-mono font-primary uppercase',
+  caption: 'text-caption font-primary uppercase text-muted',
+  // Very large type, the font-size is added where it's used: text-display for one line titles (see
+  // src/styles/fonts.css), or sized on their column for stacked letters
+  display: 'font-secondary leading-[0.75] font-normal tracking-[-0.05em]'
 };
 
 /** Rich text defaults, Tailwind preflight strips them all */
@@ -64,17 +69,8 @@ const htmlText = computed(() => {
 </script>
 
 <template>
-  <HtmlTag
-    v-if="html"
-    :tag="tagName"
-    :content="htmlText"
-    :class="[SIZE_CLASS[size], HTML_CLASS]"
-  />
-  <component
-    :is="tagName"
-    v-else
-    :class="SIZE_CLASS[size]"
-  >
+  <HtmlTag v-if="html" :tag="tagName" :content="htmlText" :class="[SIZE_CLASS[size], HTML_CLASS]" />
+  <component :is="tagName" v-else :class="SIZE_CLASS[size]">
     <slot>{{ text }}</slot>
   </component>
 </template>

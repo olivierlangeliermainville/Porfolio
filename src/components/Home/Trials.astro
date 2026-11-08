@@ -1,0 +1,131 @@
+---
+import { trials } from '@/data/projects';
+import { mediaViewer } from '@/data/site';
+import Image from '@/components/Common/Image.vue';
+import Text from '@/components/Common/Text.vue';
+import NameRow from './NameRow.astro';
+import ProjectInfo from './ProjectInfo.astro';
+---
+
+<section class="container-page grid-layout-12 pt-l" data-trials>
+  <Text tag-name="h2" text={trials.title} class="sr-only" />
+
+  <ol class="col-span-12 flex flex-col gap-y-xl md:col-span-6 md:col-start-4 md:gap-y-xxl">
+    {trials.items.map((item, index) => (
+      <li class="group grid-layout-6 gap-y-xxs" data-trial>
+        <!-- Sticks in the middle of the screen until the end of its entry. Its height (`--height`)
+               is measured by the script below, the top stays below the nav when it's taller -->
+        <div
+          class="col-span-6 self-start md:sticky md:top-[max(var(--spacing-nav),calc(50svh-var(--height,0px)/2))] md:col-span-3"
+          data-trial-sticky
+        >
+          <!-- Inverted while the block is stuck, like the active name in Work -->
+          <NameRow title={item.title} index={index} invert />
+
+          {item.description && (
+            <Text tag-name="p" size="mono" html text={item.description} class="block px-cell pt-xxs" />
+          )}
+        </div>
+
+        <div class="col-span-6 flex flex-col gap-y-xxs md:col-span-3" data-media-group>
+          <ProjectInfo project={item} class="border-line mx-px border-t " />
+
+          {item.media?.map((media) => (
+            <Image
+              image={media}
+              ar={media.ar}
+              view-label={mediaViewer.openLabel}
+              data-trial-media
+              class="mx-px grayscale transition-[filter] after:pointer-events-none after:absolute after:inset-0 after:border after:border-ghost duration-700 ease-out group-data-active:grayscale-0"
+            />
+          ))}
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { prefersReducedMotion } from '@/lib/motion';
+  import { createPixels, getColorTiming, MEDIA_PIXEL_MAX } from '@/lib/pixels';
+  import { slideInvert } from './Work/scripts/invert';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector<HTMLElement>('[data-trials]');
+  const trials = [...document.querySelectorAll<HTMLElement>('[data-trial]')];
+  const stickies = trials.map((trial) => trial.querySelector<HTMLElement>('[data-trial-sticky]')!);
+  const inverts = trials.map((trial) => trial.querySelector<HTMLElement>('[data-name-row-invert]')!);
+
+  // The sticky top centers each block: it needs the block's height, which depends on its text
+  const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      (entry.target as HTMLElement).style.setProperty('--height', `${entry.borderBoxSize[0].blockSize}px`);
+    }
+  });
+  stickies.forEach((sticky) => observer.observe(sticky));
+
+  /**
+   * An entry is in color and sharp only while its name block is stuck: grey and pixelated before
+   * it sticks and again once it's pushed out at the end of the entry. On mobile, nothing sticks:
+   * it's while the entry crosses the middle of the screen, like Work
+   */
+  const mediaItems = [...document.querySelectorAll<HTMLElement>('[data-trial-media]')];
+  const itemTrials = mediaItems.map((item) => trials.findIndex((trial) => trial.contains(item)));
+  const pixels = createPixels(mediaItems);
+  // Per entry, 1 pixelated, 0 sharp
+  const mixes = trials.map(() => ({ value: 1 }));
+  const actives = trials.map(() => false);
+
+  const pixelate = () =>
+    mediaItems.forEach((item, itemIndex) => {
+      const mix = mixes[itemTrials[itemIndex]]?.value ?? 1;
+      pixels.draw(itemIndex, mix * MEDIA_PIXEL_MAX, item.getBoundingClientRect().width);
+    });
+
+  const isStuck = (trial: HTMLElement, sticky: HTMLElement) => {
+    const { top, bottom } = trial.getBoundingClientRect();
+    const style = getComputedStyle(sticky);
+    if (style.position !== 'sticky') {
+      const line = window.innerHeight / 2;
+      return top <= line && bottom >= line;
+    }
+    // Stuck from when the entry's top reaches the sticky top until its bottom pushes the block up
+    const stickyTop = parseFloat(style.top);
+    return top <= stickyTop && bottom > stickyTop + sticky.offsetHeight;
+  };
+
+  const update = (animate: boolean) => {
+    const isAnimated = animate && !prefersReducedMotion();
+    trials.forEach((trial, index) => {
+      const active = isStuck(trial, stickies[index]);
+      if (active === actives[index]) return;
+      actives[index] = active;
+      trial.toggleAttribute('data-active', active);
+      // The name row: in from the left as it sticks, out to the right as it's pushed away
+      slideInvert(inverts[index], active, isAnimated);
+      gsap.to(mixes[index], {
+        value: active ? 0 : 1,
+        ...getColorTiming(active, isAnimated),
+        overwrite: true,
+        onUpdate: pixelate
+      });
+    });
+  };
+
+  if (section) {
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top bottom',
+      end: 'bottom top',
+      onRefresh: () => {
+        pixels.reset();
+        update(false);
+        pixelate();
+      },
+      onUpdate: () => update(true)
+    });
+  }
+</script>

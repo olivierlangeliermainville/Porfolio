@@ -5,8 +5,8 @@
  * Sizes scale linearly from their mobile value at 375px to their desktop value at 1440px, and stay
  * fixed outside that range: clamp(mobile, mobile + (desktop - mobile) * --fluid, desktop).
  *
- * The primary font is self-hosted from src/assets/fonts/ (see `fonts` in astro.config.mjs), the
- * secondary comes from Google Fonts (see UI/Head.astro). To swap them, change those and the
+ * The primary font is downloaded at build time and self-hosted (see `fonts` in astro.config.mjs),
+ * the secondary is loaded from Google Fonts at runtime (see UI/Head.astro). To swap them, change those and the
  * families below.
  */
 :root {
@@ -16,8 +16,8 @@
 
 @theme {
   /* Set by <Font/>, it already includes the fallbacks */
-  --font-primary: var(--font-akkurat-mono);
-  --font-secondary: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-primary: var(--font-dm-mono);
+  --font-secondary: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 
   /* Primary font */
   --text-heading-1: clamp(calc((56 / 16) * 1rem), calc((56 / 16) * 1rem + 88 * var(--fluid)), calc((144 / 16) * 1rem));
@@ -52,8 +52,27 @@
   --text-label--letter-spacing: 0.08em;
   --text-label--font-weight: 500;
 
-  --text-button: calc((14 / 16) * 1rem);
+  --text-button: calc((11 / 16) * 1rem);
   --text-button--line-height: 1;
-  --text-button--letter-spacing: 0.01em;
-  --text-button--font-weight: 500;
+  --text-button--letter-spacing: 0;
+  --text-button--font-weight: 800;
+
+  /* Primary font, small uppercase text used everywhere: nav, infos, paragraphs */
+  /* 12px on mobile down to 11px on desktop: clamp's min is the desktop value here */
+  --text-mono: clamp(calc((11 / 16) * 1rem), calc((12 / 16) * 1rem - 1 * var(--fluid)), calc((12 / 16) * 1rem));
+  --text-mono--line-height: 1.15;
+  --text-mono--letter-spacing: 0;
+  --text-mono--font-weight: 400;
+
+  /* Tiny labels next to a value, ex: "Link", "Stack" */
+  --text-caption: calc((10 / 16) * 1rem);
+  --text-caption--line-height: 1.2;
+  --text-caption--letter-spacing: 0;
+  --text-caption--font-weight: 400;
+
+  /* Secondary font, the one size of the very large one line titles: the hero's name, the Work
+     band's index, About's title, Contact's stacked letters. In cqw of the nearest @container (the
+     page's width), the name spans it. Only the font-size: <Text size="display"/> sets the rest.
+     The mobile hero's stacked initials are sized on their own column instead */
+  --text-display: 18cqw;
 }

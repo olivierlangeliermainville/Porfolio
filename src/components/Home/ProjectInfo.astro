@@ -1,0 +1,40 @@
+---
+import { projectInfo } from '@/data/site';
+import Button from '@/components/Common/Button.vue';
+import Text from '@/components/Common/Text.vue';
+
+const { project, class: className, ...attrs } = Astro.props;
+
+const rows = [
+  { label: projectInfo.linkLabel, value: project.link?.label, href: project.link?.to },
+  { label: projectInfo.stackLabel, value: project.stack },
+  { label: projectInfo.yearLabel, value: project.year }
+].filter((row) => row.value);
+---
+
+<div class:list={['flex flex-col items-end gap-xxs', className]} {...attrs}>
+  <dl class="w-full">
+    {rows.map((row, rowIndex) => (
+      <>
+        {rowIndex > 0 && (
+          <div class="border-line row-title border-b uppercase" aria-hidden="true">
+            &nbsp;
+          </div>
+        )}
+        <div class="border-line flex items-baseline justify-between gap-xs border-b bg-white p-xxxs">
+          <Text tag-name="dt" size="caption" text={row.label} />
+          <Text tag-name="dd" size="mono" class="text-right">
+            {row.href ? (
+              <a href={row.href} target="_blank" rel="noopener" class="transition-colors duration-(--duration-fast) hover:text-accent">
+                {row.value}
+              </a>
+            ) : (
+              row.value
+            )}
+          </Text>
+        </div>
+      </>
+    ))}
+  </dl>
+  {project.link && <Button text={projectInfo.visitLabel} to={project.link.to} />}
+</div>

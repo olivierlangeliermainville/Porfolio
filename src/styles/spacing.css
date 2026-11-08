@@ -9,12 +9,21 @@
   --spacing-m: calc((32 / 16) * 1rem);
   --spacing-l: calc((48 / 16) * 1rem);
   --spacing-xl: calc((64 / 16) * 1rem);
-  /* Space between page sections */
-  --spacing-section: calc((96 / 16) * 1rem);
+  /* Largest gap inside a section, ex: between two trials. Smaller than a section's, so a section
+     still reads as one group */
+  --spacing-xxl: calc((96 / 16) * 1rem);
+  /* Space between page sections: each one keeps it above itself (pt-section), never below, so two
+     sections never add theirs up */
+  --spacing-section: calc((128 / 16) * 1rem);
 
-  --spacing-page-x: var(--spacing-xs);
+  --spacing-page-x: var(--spacing-xxs);
   /* Layout grid gutter, see grid.css */
-  --spacing-gutter: calc((12 / 16) * 1rem);
+  --spacing-gutter: var(--spacing-xxs);
+  /* Where text starts inside a column: past its 1px grid line, then xxxs. Every text on the page
+     sits on it, free (mx-cell, px-cell) or in a white row 1px in from the line (mx-px + px-xxxs) */
+  --spacing-cell: calc(var(--spacing-xxxs) + 1px);
+  /* Room under the top of the screen for the nav: anchored sections land there, sticky blocks stop there */
+  --spacing-nav: calc((72 / 16) * 1rem);
 
   /* Same scale for border radius (rounded-xxs, rounded-xs...), overrides Tailwind's `xs` */
   --radius-xxxs: var(--spacing-xxxs);
@@ -24,8 +33,7 @@
 
 @variant md {
   :root {
-    --spacing-section: calc((160 / 16) * 1rem);
-    --spacing-page-x: var(--spacing-m);
-    --spacing-gutter: var(--spacing-xs);
+    --spacing-xxl: calc((160 / 16) * 1rem);
+    --spacing-section: calc((240 / 16) * 1rem);
   }
 }

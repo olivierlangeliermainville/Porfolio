@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200">
+<defs>
+  <filter id="blur-englobe-detail" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="120"/></filter>
+  <filter id="grain-englobe-detail"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.35 0"/></filter>
+  <linearGradient id="fade-englobe-detail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1f1a" stop-opacity="0"/><stop offset="1" stop-color="#0b1f1a" stop-opacity="0.85"/></linearGradient>
+</defs>
+  <rect width="1200" height="1200" fill="#0b1f1a"/>
+  <g filter="url(#blur-englobe-detail)"><circle cx="505" cy="37" r="598.5975652919626" fill="#2fe39a" opacity="0.85"/><circle cx="1104" cy="1131" r="335.5606734427391" fill="#c8ff5a" opacity="0.85"/><circle cx="21" cy="454" r="454.2017264664251" fill="#0a6b5c" opacity="0.85"/></g>
+  <rect width="1200" height="1200" fill="url(#fade-englobe-detail)"/>
+  
+    <g font-family="Helvetica Neue, Arial, sans-serif">
+      <circle cx="600" cy="552" r="336.00000000000006" fill="none" stroke="#eafff4" stroke-width="2" stroke-dasharray="6 10"/>
+      <circle cx="600" cy="552" r="192" fill="#eafff4"/>
+      <text x="600" y="1080" font-size="42.00000000000001" text-anchor="middle" fill="#eafff4" letter-spacing="4">ENGLOBE / DETAIL</text>
+    </g>
+  <rect width="1200" height="1200" filter="url(#grain-englobe-detail)" opacity="0.5"/>
+</svg>

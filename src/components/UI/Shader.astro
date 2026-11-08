@@ -1,0 +1,341 @@
+---
+/**
+ * A full screen WebGL canvas, fixed behind everything (under the GridLines), drawing a grid of
+ * glyphs from the `public/shader.png` sprite: 10 glyphs side by side (each width / 10), from the
+ * emptiest to the fullest. The fragment shader computes a value from 0 to 1 per cell and shows the
+ * matching glyph, in the foreground color, over the transparent canvas.
+ *
+ * The cells follow the GridLines overlay: they fill its blocks (3 columns on desktop, 6 on
+ * mobile), leave its gutters empty, and the center gutter widens with --grid-center. Each block
+ * fits a whole number of square cells, about CELL px wide, starting from the top of the screen.
+ *
+ * Uniforms: uTime (s), uResolution (device px), uTrail and uAge (where the pointer passed, in
+ * screen heights from the center, and how faded each point is), uDpr, uSprite, uColor, and the grid in css px: uGutter, uCenter, uPageX, uSpan. Renders a single frame when
+ * motion is reduced, pauses while the tab is hidden.
+ */
+---
+
+<canvas
+  class="pointer-events-none fixed inset-x-0 top-0 -z-20 h-screen w-full"
+  aria-hidden="true"
+  data-shader></canvas>
+
+<script>
+  import { prefersReducedMotion } from '@/lib/motion';
+
+  // Above 2 the extra pixels cost a lot and barely show
+  const MAX_DPR = 2;
+  const SPRITE = '/shader.png';
+  // false: skips the glyph cells and shows the raw value per pixel, to work on the effect itself
+  const CELLS = true;
+  // Columns per block of the GridLines overlay, under and from the md breakpoint
+  const SPAN_MOBILE = 6;
+  const SPAN_DESKTOP = 3;
+  // Pointer trail: where the pointer passed stays in place and fades out over LIFETIME seconds. The
+  // last TRAIL positions are kept, one per frame the pointer moved: past that, the oldest go
+  const TRAIL = 32;
+  const LIFETIME = 4.2;
+
+  // One triangle larger than the screen, clipped to it (no diagonal seam, unlike a quad)
+  const vertexSource = /* glsl */ `
+    attribute vec2 aPosition;
+
+    void main() {
+      gl_Position = vec4(aPosition, 0.0, 1.0);
+    }
+  `;
+
+  const fragmentSource = /* glsl */ `
+    #define TRAIL ${TRAIL}
+
+    // highp where there is one: the grid math is in px, past what mediump holds on phones
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+    #else
+    precision mediump float;
+    #endif
+
+    uniform float uTime;        // Seconds since start
+    uniform vec2 uResolution;   // Canvas size, in device pixels
+    uniform vec2 uTrail[TRAIL]; // Where the pointer passed, newest first, in screen heights from the center
+    uniform float uAge[TRAIL];  // How old each point is, 0 (just now) to 1 (faded out)
+    uniform float uDpr;         // Device pixel ratio used for the canvas
+    uniform sampler2D uSprite;  // The glyphs, side by side
+    uniform vec3 uColor;        // Glyph color
+    uniform bool uCells;        // Draws the glyph cells, or the raw value
+    uniform float uGutter;      // Grid gutter, css px
+    uniform float uCenter;      // Center gutter, css px: the gutter, or wider (--grid-center)
+    uniform float uPageX;       // Page side margin, css px
+    uniform float uSpan;        // Columns per block
+
+    const float GLYPHS = 10.0;
+    const float COLUMNS = 12.0;
+    const float CELL = 14.0;    // Target cell size, in css px
+    const float OPACITY = 0.17;       // The waves
+    const float TRAIL_OPACITY = 0.1;  // The pointer trail, at its fullest
+
+    // Distance from p to the segment a-b, and how far along it (0 at a, 1 at b)
+    vec2 segment(vec2 p, vec2 a, vec2 b) {
+      vec2 ab = b - a;
+      float along = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+      return vec2(length(p - a - ab * along), along);
+    }
+
+    // The pointer trail: a line through where the pointer passed, thinning and fading out in place
+    // as it ages, and always tapering to nothing at its tip (the oldest point kept), so it never
+    // ends abruptly where the oldest points drop
+    float trail(vec2 uv) {
+      float strength = 0.0;
+      for (int i = 0; i < TRAIL - 1; i++) {
+        // An end faded: nothing left of this segment, and no line jumping from an old stroke
+        if (uAge[i] >= 1.0 || uAge[i + 1] >= 1.0) continue;
+        vec2 hit = segment(uv, uTrail[i], uTrail[i + 1]);
+        float age = mix(uAge[i], uAge[i + 1], hit.y);
+        // 0 at the cursor, 1 at the tip
+        float along = (float(i) + hit.y) / float(TRAIL - 1);
+        // Eased: full near the cursor, a long soft falloff to the tip
+        float fade = (1.0 - smoothstep(0.0, 1.0, along)) * (1.0 - smoothstep(0.0, 1.0, age));
+        float radius = mix(0.01, 0.06, fade);
+        strength = max(strength, smoothstep(radius, 0.0, hit.x) * fade);
+      }
+      return strength;
+    }
+
+    // Template: mostly empty, faint slow waves (only the first glyphs: dots and ticks), fuller and
+    // darker glyphs along the pointer trail. Returns the glyph (0 to 1) and the opacity, uv in screen
+    // heights from the center
+    vec2 value(vec2 uv) {
+      float waves = 0.5 + 0.5 * sin(uv.x * 4.0 + uTime * 0.3) * cos(uv.y * 3.0 - uTime * 0.2);
+      float pointer = trail(uv);
+      float glyph = clamp(smoothstep(0.5, 1.0, waves) * 0.3 + pointer, 0.0, 1.0);
+      return vec2(glyph, mix(OPACITY, TRAIL_OPACITY, pointer));
+    }
+
+    void main() {
+      if (!uCells) {
+        vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution) / uResolution.y;
+        vec2 v = value(uv);
+        float raw = v.x * v.y;
+        gl_FragColor = vec4(uColor * raw, raw);
+        return;
+      }
+
+      // In css px, from the top left, like the page
+      vec2 px = vec2(gl_FragCoord.x, uResolution.y - gl_FragCoord.y) / uDpr;
+      float width = uResolution.x / uDpr;
+
+      // The grid, as grid.css lays it: 12 equal columns, the gutters, a wider center gutter
+      float column = (width - 2.0 * uPageX - (COLUMNS - 2.0) * uGutter - uCenter) / COLUMNS;
+      float block = uSpan * column + (uSpan - 1.0) * uGutter;
+      float period = block + uGutter;
+      float blocksPerSide = COLUMNS * 0.5 / uSpan;
+
+      // Mirrored around the center gutter: distance from its edge, outward
+      float fromCenter = px.x - width * 0.5;
+      float outward = abs(fromCenter) - uCenter * 0.5;
+      float inBlock = mod(outward, period);
+
+      // In a gutter or the page margins: empty
+      if (outward < 0.0 || outward > blocksPerSide * period - uGutter || inBlock > block) {
+        gl_FragColor = vec4(0.0);
+        return;
+      }
+
+      // From the block's left edge, on both sides
+      float x = fromCenter < 0.0 ? block - inBlock : inBlock;
+      float blockLeft = px.x - x;
+
+      // A whole number of square cells across the block
+      float size = block / max(1.0, floor(block / CELL + 0.5));
+      vec2 cellId = floor(vec2(x, px.y) / size);
+      vec2 local = fract(vec2(x, px.y) / size);
+
+      // The value is sampled once per cell, at its center, so the whole cell shows one glyph
+      vec2 center = vec2(blockLeft + (cellId.x + 0.5) * size, (cellId.y + 0.5) * size);
+      vec2 uv = (vec2(center.x * uDpr, uResolution.y - center.y * uDpr) - 0.5 * uResolution) / uResolution.y;
+      vec2 v = value(uv);
+      float index = min(floor(v.x * GLYPHS), GLYPHS - 1.0);
+
+      // local is top down, like the sprite's rows
+      vec2 spriteUv = vec2((index + local.x) / GLYPHS, local.y);
+      float mask = texture2D(uSprite, spriteUv).r * v.y;
+
+      // Premultiplied alpha: the page background shows through
+      gl_FragColor = vec4(uColor * mask, mask);
+    }
+  `;
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-shader]')!;
+  const gl = canvas.getContext('webgl', { antialias: false, powerPreference: 'low-power' });
+
+  if (gl) {
+    const compile = (type: number, source: string) => {
+      const shader = gl.createShader(type)!;
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(shader));
+      return shader;
+    };
+
+    const program = gl.createProgram()!;
+    gl.attachShader(program, compile(gl.VERTEX_SHADER, vertexSource));
+    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragmentSource));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(program));
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const position = gl.getAttribLocation(program, 'aPosition');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+    const uniforms = {
+      time: gl.getUniformLocation(program, 'uTime'),
+      resolution: gl.getUniformLocation(program, 'uResolution'),
+      trail: gl.getUniformLocation(program, 'uTrail'),
+      age: gl.getUniformLocation(program, 'uAge'),
+      dpr: gl.getUniformLocation(program, 'uDpr'),
+      sprite: gl.getUniformLocation(program, 'uSprite'),
+      color: gl.getUniformLocation(program, 'uColor'),
+      cells: gl.getUniformLocation(program, 'uCells'),
+      gutter: gl.getUniformLocation(program, 'uGutter'),
+      center: gl.getUniformLocation(program, 'uCenter'),
+      pageX: gl.getUniformLocation(program, 'uPageX'),
+      span: gl.getUniformLocation(program, 'uSpan')
+    };
+
+    // The overlay's grid (GridLines.astro), measured on resize. Its --grid-center is read every
+    // frame: it animates, and only on the sections near the screen and the GridLines (useGridCenter)
+    const grid = document.querySelector<HTMLElement>('[data-grid-lines]')!;
+    const desktop = matchMedia('(width >= 48rem)');
+    let gutter = 0;
+
+    gl.uniform1i(uniforms.cells, CELLS ? 1 : 0);
+
+    // The foreground token, a hex color (see colors.css)
+    const hex = getComputedStyle(document.documentElement).getPropertyValue('--color-foreground').trim();
+    const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    gl.uniform3f(uniforms.color, rgb[0], rgb[1], rgb[2]);
+
+    // The pointer, in screen heights from the center (the shader's uv), and where it passed: x, y
+    // pairs and the time of each, newest first. Never passed: already faded. `left`: the pointer
+    // left the window since its last move
+    const pointer = { x: 0, y: 0, moved: false, left: false };
+    const trail = new Float32Array(TRAIL * 2);
+    const times = new Float64Array(TRAIL).fill(-Infinity);
+    const ages = new Float32Array(TRAIL);
+    const start = performance.now();
+    let frame = 0;
+    let ready = false;
+
+    // A new point first, the others shift down and the oldest drops
+    const push = (time: number) => {
+      trail.copyWithin(2, 0, trail.length - 2);
+      times.copyWithin(1, 0, TRAIL - 1);
+      trail[0] = pointer.x;
+      trail[1] = pointer.y;
+      times[0] = time;
+    };
+
+    const render = () => {
+      if (!ready) return;
+      const now = performance.now();
+
+      if (pointer.moved) {
+        // Back in the window, maybe far from where it left: an already faded point in between
+        // breaks the stroke, instead of a line from the exit to the entry
+        if (pointer.left) push(-Infinity);
+        push(now);
+        pointer.moved = false;
+        pointer.left = false;
+      }
+      for (let i = 0; i < TRAIL; i++) ages[i] = Math.min((now - times[i]) / 1000 / LIFETIME, 1);
+
+      gl.uniform1f(uniforms.time, (now - start) / 1000);
+      gl.uniform2fv(uniforms.trail, trail);
+      gl.uniform1fv(uniforms.age, ages);
+      const center = parseFloat(getComputedStyle(grid).getPropertyValue('--grid-center')) || 0;
+      gl.uniform1f(uniforms.center, Math.max(gutter, center));
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+
+    const loop = () => {
+      render();
+      frame = requestAnimationFrame(loop);
+    };
+
+    const play = () => {
+      cancelAnimationFrame(frame);
+      if (prefersReducedMotion() || document.hidden) render();
+      else loop();
+    };
+
+    // Matches the drawing buffer to the canvas' css size × pixel ratio
+    const resize = () => {
+      const gridStyle = getComputedStyle(grid);
+      gutter = parseFloat(gridStyle.columnGap) || 0;
+      gl.uniform1f(uniforms.gutter, gutter);
+      gl.uniform1f(uniforms.pageX, parseFloat(gridStyle.paddingLeft) || 0);
+      gl.uniform1f(uniforms.span, desktop.matches ? SPAN_DESKTOP : SPAN_MOBILE);
+
+      const dpr = Math.min(window.devicePixelRatio, MAX_DPR);
+      const width = Math.round(canvas.clientWidth * dpr);
+      const height = Math.round(canvas.clientHeight * dpr);
+      if (canvas.width === width && canvas.height === height) return;
+
+      canvas.width = width;
+      canvas.height = height;
+      gl.viewport(0, 0, width, height);
+      gl.uniform2f(uniforms.resolution, width, height);
+      gl.uniform1f(uniforms.dpr, dpr);
+      render();
+    };
+
+    resize();
+    new ResizeObserver(resize).observe(canvas);
+    // The pixel ratio changes without a resize when the window moves to another screen, or on zoom
+    const watchDpr = () =>
+      matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener(
+        'change',
+        () => {
+          resize();
+          watchDpr();
+        },
+        { once: true }
+      );
+    watchDpr();
+
+    window.addEventListener(
+      'pointermove',
+      (event) => {
+        pointer.x = (event.clientX - window.innerWidth / 2) / window.innerHeight;
+        pointer.y = 0.5 - event.clientY / window.innerHeight;
+        pointer.moved = true;
+      },
+      { passive: true }
+    );
+    // Out of the window (no element it went to), or the window lost focus (alt-tab)
+    document.addEventListener('pointerout', (event) => {
+      if (!event.relatedTarget) pointer.left = true;
+    });
+    window.addEventListener('blur', () => (pointer.left = true));
+
+    // The sprite isn't a power of 2: no mipmaps, clamped edges (required by WebGL 1)
+    const image = new Image();
+    image.src = SPRITE;
+    image.decode().then(() => {
+      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.uniform1i(uniforms.sprite, 0);
+
+      ready = true;
+      document.addEventListener('visibilitychange', play);
+      play();
+    });
+  }
+</script>

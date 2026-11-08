@@ -5,7 +5,7 @@
 @import './spacing.css';
 @import './grid.css';
 
-/* `hover:` that skips disabled and inert (`data-inert`) elements, ex: hover-enabled:bg-primary-hover */
+/* `hover:` that skips disabled and inert (`data-inert`) elements, ex: hover-enabled:bg-accent */
 @custom-variant hover-enabled {
   @media (hover: hover) {
     &:hover:not(:disabled, [data-inert]) {
@@ -20,6 +20,20 @@
   --duration-fast: 150ms;
   --duration-default: 300ms;
   --duration-slow: 500ms;
+
+  /* An arrow pushing to the right then back, ex: on a "Swipe" hint */
+  --animate-nudge: nudge 1.6s var(--ease-standard) infinite;
+
+  @keyframes nudge {
+    0%,
+    60%,
+    100% {
+      transform: translateX(0);
+    }
+    30% {
+      transform: translateX(0.25em);
+    }
+  }
 }
 
 @layer base {
@@ -32,12 +46,12 @@
   }
 
   body {
-    @apply font-secondary text-body-1;
+    @apply font-primary text-mono;
   }
 
   /* Anchored sections land below the sticky nav */
   section[id] {
-    scroll-margin-top: calc((72 / 16) * 1rem);
+    scroll-margin-top: var(--spacing-nav);
   }
 
   ::selection {

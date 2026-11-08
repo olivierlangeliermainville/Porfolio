@@ -1,0 +1,28 @@
+---
+/**
+ * The current time in a time zone, ex: `14:05`. Rendered at build time, then kept current
+ *
+ * @example
+ * <Clock timeZone="America/Toronto" />
+ */
+import { formatTime } from '@/lib/format';
+
+const { timeZone } = Astro.props;
+---
+
+<time data-clock data-time-zone={timeZone}>
+  {formatTime(new Date(), timeZone)}
+</time>
+
+<script>
+  import { formatTime } from '@/lib/format';
+
+  const UPDATE_INTERVAL = 10000;
+
+  document.querySelectorAll<HTMLElement>('[data-clock]').forEach((clock) => {
+    const update = () => (clock.textContent = formatTime(new Date(), clock.dataset.timeZone));
+
+    update();
+    setInterval(update, UPDATE_INTERVAL);
+  });
+</script>

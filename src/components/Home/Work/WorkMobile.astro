@@ -1,0 +1,81 @@
+---
+/**
+ * Mobile: one block per project under each other, with the band (WorkBand) pinned at the bottom
+ * of the screen like on desktop. A project is active while its block crosses the middle of the
+ * screen: its name row is inverted, its media in color, and the band rolls to its number and
+ * title (scripts/mobile.js).
+ *
+ * Same ledger as desktop and Trials: the heading in ghost at the end of the left half, the column
+ * labels, then white rows 1px in from each side so the grid lines behind stay visible.
+ *
+ * Each block: the name row, the media in a row swiped sideways (it snaps to each one), the info.
+ * Like on desktop, the media of the other projects are pixelated, more with their distance from the
+ * line, and resolve to sharp with the color of their project.
+ */
+import { projects } from '@/data/projects';
+import { mediaViewer, work } from '@/data/site';
+import { padNumber } from '@/lib/format';
+import Icon from '@/components/Common/Icon.vue';
+import Image from '@/components/Common/Image.vue';
+import Text from '@/components/Common/Text.vue';
+import NameRow from '../NameRow.astro';
+import ProjectInfo from '../ProjectInfo.astro';
+---
+
+<div class="grid-layout-12 pt-xs md:hidden">
+  <Text tag-name="h2" text={work.title} class="text-ghost col-span-6 mr-cell text-end normal-case!" />
+</div>
+
+<div class="mt-l grid-layout-12 md:hidden" aria-hidden="true">
+  <Text size="caption" text={work.columns.name} class="col-span-6 ml-cell" />
+  <Text size="caption" text={work.columns.index} class="col-span-6 mr-cell text-end" />
+</div>
+
+<!-- The band ends its stick at the bottom of the section: the room under the last project keeps
+     it clear of the info, with the gap between two projects (`--band-height` is set by the script) -->
+<ol class="mt-xxs flex flex-col gap-y-xl pb-[calc(var(--band-height,0px)+var(--spacing-xl))] md:hidden">
+  {projects.map((project, index) => (
+    <li class="group" data-work-mobile-project>
+      <NameRow title={project.title} index={index} invert />
+
+      <div class="border-ghost overflow-hidden border-x bg-white px-page-x">
+        {project.media?.length > 0 && (
+          <div
+            class="-mx-page-x mt-xxs flex snap-x snap-mandatory scroll-px-[calc(var(--spacing-page-x)+1px)] gap-gutter overflow-x-auto px-[calc(var(--spacing-page-x)+1px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={`${project.title} media`}
+            data-work-mobile-carousel
+            data-media-group
+          >
+            {project.media.map((media) => (
+              <Image
+                image={media}
+                ar={media.ar}
+                view-label={mediaViewer.openLabel}
+                data-work-mobile-media-item
+                class="h-[min(45svh,45vw)] w-auto shrink-0 snap-start grayscale transition-[filter] duration-700 ease-out group-data-active:grayscale-0 after:pointer-events-none after:absolute after:inset-0 after:border after:border-ghost"
+              />
+            ))}
+          </div>
+        )}
+
+        <!-- More than one media: which one is shown out of how many (scripts/mobile.js), and a
+               nudging arrow to say the row swipes -->
+        {project.media?.length > 1 && (
+          <div class="mt-xxs flex justify-between pb-xxs" aria-hidden="true">
+            <Text size="caption" class="tabular-nums">
+              <span data-work-mobile-count>01</span> / {padNumber(project.media.length)}
+            </Text>
+            <Text size="caption" class="flex items-center gap-xxxs">
+              {work.swipeLabel}
+              <Icon name="arrow" class="motion-safe:animate-nudge" />
+            </Text>
+          </div>
+        )}
+      </div>
+
+      <ProjectInfo project={project} class="border-line mx-px mt-xxs border-y bg-white pb-xxs" />
+    </li>
+  ))}
+</ol>

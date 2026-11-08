@@ -9,9 +9,9 @@
 
   /* Raw colors */
   --color-ink: #16161a;
-  --color-paper: #f4f2ee;
+  --color-paper: #ffffff;
   --color-white: #ffffff;
-  --color-orange: #ff5c39;
+  --color-orange: #00ff91;
   --color-grey: #8a8780;
 
   /* Page */
@@ -20,15 +20,18 @@
   /* Secondary text, captions */
   --color-muted: rgb(22 22 26 / 0.6);
   --color-border: rgb(22 22 26 / 0.15);
+  /* Lighter lines: the background grid and the section dividers */
+  --color-line: rgb(22 22 26 / 0.1);
+  /* The very large grey type behind content, ex: the name in the hero */
+  --color-ghost: #e3e3e3;
   --color-focus: var(--color-orange);
 
   /* Buttons */
   --color-primary: var(--color-ink);
-  --color-primary-hover: #34343b;
   --color-on-primary: var(--color-paper);
   --color-accent: var(--color-orange);
   --color-on-accent: var(--color-ink);
 
   /* Shown behind images before they load */
-  --color-placeholder: rgb(22 22 26 / 0.08);
+  --color-placeholder: #d9d9d9;
 }

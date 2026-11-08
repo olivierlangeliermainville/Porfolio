@@ -1,50 +1,140 @@
 ---
-import { about, experience } from '@/data/site';
-import MaybeLink from '@/components/Common/MaybeLink.vue';
-import Tag from '@/components/Common/Tag.vue';
+import { about, profile } from '@/data/site';
+import Image from '@/components/Common/Image.vue';
 import Text from '@/components/Common/Text.vue';
+
+const half = Math.floor(about.title.length / 2);
+const titleHalves = [about.title.slice(0, half), about.title.slice(half)];
 ---
 
-<section id="about" class="container-page border-border grid-layout-1 gap-y-l border-t py-section md:grid-layout-12">
-  <Text tag-name="h2" size="heading-2" text={about.title} class="md:col-span-4" data-fade data-scroll />
+<section id="about" class="pt-section @container">
+  <div class="container-page grid-layout-12 items-end pb-xxxs">
+    <p class="col-span-6 md:col-span-3 md:col-start-4">
+      <Text size="mono" text={about.greeting} class="mx-cell block" />
+      <Text size="mono" text={profile.name} class="mx-cell block" />
+    </p>
+    <Text tag-name="p" size="mono" text={about.role} class="col-span-6 mx-cell text-right md:col-span-3" />
+  </div>
 
-  <div class="flex flex-col gap-l md:col-span-8 md:col-start-5" data-fade data-scroll data-delay="0.1">
-    <div class="flex flex-col gap-xs">
-      {about.paragraphs.map((paragraph) => <Text tag-name="p" size="body-1" html text={paragraph} class="max-w-[60ch]" />)}
+  <div
+    class="border-line relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center overflow-hidden border-y bg-white [--portrait-large:calc(var(--text-display)*0.8)] [--portrait-small:10px]"
+    data-portrait-band
+  >
+    <h2 class="sr-only">{about.title}</h2>
+    {titleHalves.map((titleHalf, index) => (
+      <Text
+        size="display"
+        text={titleHalf}
+        aria-hidden="true"
+        class={`text-ghost row-start-1 translate-y-[0.016em] text-display leading-0! whitespace-nowrap uppercase select-none ${
+          index === 0 ? 'col-start-1 justify-self-end pr-[0.06em]' : 'col-start-3 justify-self-start pl-[0.06em]'
+        }`}
+      />
+    ))}
+    <div
+      class="relative col-start-2 row-start-1 flex h-(--portrait-large) w-(--portrait-large) justify-center overflow-hidden"
+      data-portrait-window
+    >
+      {about.portrait ? (
+        <Image image={about.portrait} data-portrait class="size-(--portrait-large) shrink-0" />
+      ) : (
+        <div data-portrait class="bg-placeholder relative size-(--portrait-large) shrink-0" />
+      )}
     </div>
+  </div>
 
-    {
-      about.skills?.length > 0 && (
-        <ul class="flex flex-wrap gap-xxs" aria-label="Skills">
-          {about.skills.map((skill) => (
-            <li>
-              <Tag text={skill} />
-            </li>
-          ))}
-        </ul>
-      )
-    }
+  <div class="container-page grid-layout-12 pt-xxxs">
+    <div class="col-span-6 mx-cell md:col-span-3 md:col-start-4">
+      <Text tag-name="p" size="mono" text={about.education.degree} />
+      <Text tag-name="p" size="mono" text={about.education.school} />
+    </div>
+    <Text tag-name="p" size="mono" text={about.education.school} class="col-span-6 mx-cell text-right md:col-span-3" />
 
-    {
-      experience.length > 0 && (
-        <div>
-          <Text tag-name="h3" size="label" text="Experience" class="text-muted mb-xs block" />
-          <ul class="border-border border-t">
-            {experience.map((job) => (
-              <li class="border-border border-b">
-                <MaybeLink
-                  to={job.to}
-                  class="grid grid-cols-[1fr_auto] gap-x-xs py-xs transition-opacity md:grid-cols-[1fr_1fr_auto] [&[href]:hover]:opacity-70"
-                >
-                  <Text size="body-1" text={job.company} />
-                  <Text size="body-2" text={job.period} class="text-muted text-right md:order-last" />
-                  <Text size="body-2" text={job.role} class="text-muted col-span-2 md:col-span-1" />
-                </MaybeLink>
-              </li>
-            ))}
-          </ul>
+    <div class="col-span-12 mt-l grid-layout-12 gap-y-l md:col-span-6 md:col-start-4 md:mt-xl md:grid-layout-6">
+      {about.blocks.map((block) => (
+        <div class="col-span-12 flex flex-col gap-xs px-cell md:col-span-3">
+          <Text tag-name="h3" size="mono" text={block.title} />
+          <Text tag-name="p" size="mono" html text={block.text} />
         </div>
-      )
-    }
+      ))}
+    </div>
   </div>
 </section>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { prefersReducedMotion } from '@/lib/motion';
+  import { scopeGridCenter, setGridCenter, setGridCenterFrame } from '@/composables/useGridCenter';
+  import { createPixels, MEDIA_PIXEL_MAX } from '@/lib/pixels';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // The growth: it plays once the band's top passes PORTRAIT_START (like ScrollTrigger's `start`),
+  // and plays back when you scroll back above it
+  const PORTRAIT_START = '0% 55%';
+  const PORTRAIT_DURATION = 1.2;
+  const PORTRAIT_EASE = 'expo.inOut';
+
+  const band = document.querySelector<HTMLElement>('[data-portrait-band]');
+  const portraitWindow = band?.querySelector<HTMLElement>('[data-portrait-window]');
+  const portrait = band?.querySelector<HTMLElement>('[data-portrait]');
+
+  if (band && portraitWindow && portrait && !prefersReducedMotion()) {
+    const pixels = createPixels([portrait]);
+    // 1 narrow, grey and pixelated, 0 open, in color and sharp
+    const state = { mix: 1 };
+
+    // The band's sizes in px, measured once (and on refresh): a frame only writes, it never reads
+    // the layout back
+    const sizes = { large: 0, small: 0 };
+    const measure = () => {
+      sizes.large = portrait.offsetWidth;
+      sizes.small = parseFloat(getComputedStyle(band).getPropertyValue('--portrait-small')) || 0;
+    };
+
+    const getWidth = () => sizes.large - (sizes.large - sizes.small) * state.mix;
+
+    const render = () => {
+      const { mix } = state;
+      portraitWindow.style.width = `calc(var(--portrait-large) - (var(--portrait-large) - var(--portrait-small)) * ${mix})`;
+      portrait.style.filter = mix > 0 ? `grayscale(${mix})` : '';
+      pixels.draw(0, mix * MEDIA_PIXEL_MAX, sizes.large);
+      setGridCenterFrame(getWidth());
+    };
+
+    const commit = () => setGridCenter(getWidth());
+    const run = (direction: 'play' | 'reverse') => {
+      scopeGridCenter(getWidth());
+      tween[direction]();
+    };
+
+    const tween = gsap.to(state, {
+      mix: 0,
+      duration: PORTRAIT_DURATION,
+      ease: PORTRAIT_EASE,
+      paused: true,
+      onUpdate: render,
+      onComplete: commit,
+      onReverseComplete: commit
+    });
+
+    ScrollTrigger.create({
+      trigger: band,
+      start: PORTRAIT_START,
+      onEnter: () => run('play'),
+      onLeaveBack: () => run('reverse'),
+      onRefresh: () => {
+        pixels.reset();
+        measure();
+        render();
+        // Resized midway: the whole page gets the width, the run carries on everywhere
+        if (!tween.isActive()) commit();
+      }
+    });
+
+    measure();
+    render();
+    commit();
+  }
+</script>

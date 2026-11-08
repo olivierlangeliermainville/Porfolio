@@ -1,0 +1,114 @@
+---
+/**
+ * A media full size, over the whole page: opened by clicking an <Image view-label="..."/>, it
+ * flips through the media of the same `[data-media-group]` (arrows, or the keyboard ← →).
+ * Esc or the close button close it, and the focus returns to the media
+ */
+import { mediaViewer } from '@/data/site';
+import Icon from '@/components/Common/Icon.vue';
+import Text from '@/components/Common/Text.vue';
+
+const buttonClass = 'flex items-center gap-xxxs transition-colors duration-(--duration-fast) hover-enabled:text-accent';
+---
+
+<dialog
+  class="m-0 size-full max-h-none max-w-none bg-background p-0 text-foreground opacity-0 transition-[opacity,display,overlay] transition-discrete duration-(--duration-default) ease-standard backdrop:bg-transparent open:opacity-100 starting:open:opacity-0 motion-reduce:transition-none"
+  data-media-viewer
+>
+  <div class="flex size-full flex-col">
+    <div class="container-page grid-layout-12 items-baseline pt-xxs">
+      <Text size="mono" class="col-span-3 px-cell tabular-nums md:col-span-1" data-media-viewer-count />
+      <Text
+        size="mono"
+        class="col-span-6 hidden truncate px-cell text-muted md:col-span-10 md:block"
+        data-media-viewer-caption
+      />
+      <button
+        type="button"
+        class:list={[buttonClass, 'col-span-9 justify-self-end px-cell md:col-span-1']}
+        data-media-viewer-close
+      >
+        <Text size="mono" text={mediaViewer.closeLabel} />
+        <Icon name="close" />
+      </button>
+    </div>
+
+    <!-- The media, contained in the room left by the bars -->
+    <div class="flex min-h-0 flex-1 items-center justify-center p-xs" data-media-viewer-stage></div>
+
+    <div class="container-page flex justify-between px-cell pb-xxs" data-media-viewer-nav>
+      <button type="button" class={buttonClass} data-media-viewer-previous>
+        <Icon name="arrow" class="rotate-180" />
+        <Text size="mono" text={mediaViewer.previousLabel} />
+      </button>
+      <button type="button" class={buttonClass} data-media-viewer-next>
+        <Text size="mono" text={mediaViewer.nextLabel} />
+        <Icon name="arrow" />
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { padNumber } from '@/lib/format';
+  import { isVideo } from '@/lib/image';
+  import { setScrollLocked } from '@/composables/useSmoothScroll';
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-media-viewer]')!;
+  const $ = <T extends HTMLElement>(name: string) => dialog.querySelector<T>(`[data-media-viewer-${name}]`)!;
+  const stage = $('stage');
+  const count = $('count');
+  const caption = $('caption');
+  const nav = $('nav');
+
+  // The clickable media of the group being viewed, each one's `data-src` and `data-alt` (Image.vue)
+  let items: HTMLElement[] = [];
+  let current = 0;
+
+  const show = (index: number) => {
+    current = (index + items.length) % items.length;
+    const { src = '', alt = '' } = items[current].dataset;
+
+    // A video loops muted like a gif, as in the page
+    const media = isVideo(src) ? document.createElement('video') : document.createElement('img');
+    media.src = src;
+    // Its own size, down to fit the stage, outlined like in the page so a white media stays visible
+    media.className = 'block max-h-full max-w-full border border-ghost';
+    if (media instanceof HTMLVideoElement) {
+      Object.assign(media, { muted: true, loop: true, autoplay: true, playsInline: true });
+      if (alt) media.setAttribute('aria-label', alt);
+    } else {
+      media.alt = alt;
+    }
+    stage.replaceChildren(media);
+
+    count.textContent = `${padNumber(current + 1)} / ${padNumber(items.length)}`;
+    caption.textContent = alt;
+  };
+
+  document.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest<HTMLElement>('[data-media-view]');
+    if (!button) return;
+    const group = button.closest('[data-media-group]');
+    items = group ? [...group.querySelectorAll<HTMLElement>('[data-media-view]')] : [button];
+    nav.hidden = items.length < 2;
+    show(items.indexOf(button));
+    dialog.showModal();
+    setScrollLocked(true);
+  });
+
+  dialog.addEventListener('close', () => {
+    setScrollLocked(false);
+    stage.querySelector('video')?.pause();
+  });
+
+  $('close').addEventListener('click', () => dialog.close());
+  $('previous').addEventListener('click', () => show(current - 1));
+  $('next').addEventListener('click', () => show(current + 1));
+
+  dialog.addEventListener('keydown', (event) => {
+    if (items.length < 2) return;
+    if (event.key === 'ArrowLeft') show(current - 1);
+    if (event.key === 'ArrowRight') show(current + 1);
+  });
+</script>

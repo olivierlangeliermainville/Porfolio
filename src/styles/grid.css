@@ -1,17 +1,59 @@
 /*
  * Layout grid: columns separated by the gutter (see spacing.css)
  * The number is the column count, ex: md:grid-layout-12, a nested md:grid-layout-6 inside a col-span-6
+ *
+ * The center gutter can widen: by --grid-extra, set from --grid-center on :root (a width in px, ex:
+ * the About portrait sets its own). The other columns narrow to make room, so everything placed on
+ * them moves out with them. Every grid-layout is centered on the page (full width, or the middle
+ * columns), so their center gutters all line up.
+ *
+ * CSS can't widen a single gap: the two middle columns take the extra, and the items that end or
+ * start on the center gutter get it back as a margin (src/composables/useGridCenter.js)
+ *
+ * --grid-extra is computed on each grid, not once on :root: while it animates, --grid-center is
+ * only set on the sections near the screen, and only those relayout
  */
-@utility grid-layout-* {
+:root {
+  /* The widest the center gutter gets: the About portrait's full size. Contact sizes its letters on it */
+  --grid-center-max: min(20rem, 20vw);
+}
+
+@utility grid-layout-12 {
   display: grid;
-  grid-template-columns: repeat(--value(integer), minmax(0, 1fr));
+  --grid-extra: max(0px, var(--grid-center, 0px) - var(--spacing-gutter));
+  --grid-column: calc((100% - 11 * var(--spacing-gutter) - var(--grid-extra)) / 12);
+  grid-template-columns:
+    repeat(5, var(--grid-column))
+    repeat(2, calc(var(--grid-column) + var(--grid-extra) / 2))
+    repeat(5, var(--grid-column));
   column-gap: var(--spacing-gutter);
+}
+
+@utility grid-layout-6 {
+  display: grid;
+  --grid-extra: max(0px, var(--grid-center, 0px) - var(--spacing-gutter));
+  --grid-column: calc((100% - 5 * var(--spacing-gutter) - var(--grid-extra)) / 6);
+  grid-template-columns:
+    repeat(2, var(--grid-column))
+    repeat(2, calc(var(--grid-column) + var(--grid-extra) / 2))
+    repeat(2, var(--grid-column));
+  column-gap: var(--spacing-gutter);
+}
+
+/*
+ * A title line of the ledger: a project's name row, and the empty lines between the rows. Taller
+ * than an info row (p-xxxs), less padding under the text than over it: the uppercase has no
+ * descenders, so it reads centered. Text inset: see --spacing-cell
+ */
+@utility row-title {
+  padding-inline: var(--spacing-xxxs);
+  padding-top: calc(var(--spacing-xxs) - 1px);
+  padding-bottom: calc(var(--spacing-xxs) - 3px);
 }
 
 /* Page width container with the side margins */
 @utility container-page {
   width: 100%;
-  max-width: calc((1600 / 16) * 1rem);
   margin-inline: auto;
   padding-inline: var(--spacing-page-x);
 }

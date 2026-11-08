@@ -1,0 +1,30 @@
+---
+/**
+ * Desktop: every project's media, one after the other. The list slides up with the scroll, each one
+ * grows as it reaches the active line, in color while its project is active, and pixelated with its
+ * distance from the line (scripts/desktop.js)
+ * The active project's media count is in the band, at the bottom of this column (WorkBand)
+ * Keep them stacked with no gap or margin: desktop.js places each one at its index × MEDIA_HEIGHT
+ */
+import { projects } from '@/data/projects';
+import { mediaViewer } from '@/data/site';
+import Image from '@/components/Common/Image.vue';
+---
+
+<div class="relative col-span-3 pt-screen">
+  <div class="absolute inset-x-0 top-0 flex flex-col" data-work-media>
+    {projects.map((project) => (
+      <div class="flex flex-col items-end grayscale" data-work-media-group data-media-group>
+        {project.media?.map((media) => (
+          <Image
+            image={media}
+            ar={media.ar}
+            view-label={mediaViewer.openLabel}
+            class="w-1/2 after:pointer-events-none after:absolute after:inset-0 after:border after:border-ghost"
+            data-work-media-item
+          />
+        ))}
+      </div>
+    ))}
+  </div>
+</div>

@@ -2,27 +2,29 @@
 import '@/styles/global.css';
 import Head from '@/components/UI/Head.astro';
 import Nav from '@/components/UI/Nav.astro';
-import Footer from '@/components/UI/Footer.astro';
+import GridLines from '@/components/UI/GridLines.astro';
+import Shader from '@/components/UI/Shader.astro';
+import MediaViewer from '@/components/UI/MediaViewer.astro';
 ---
 
 <html lang="en">
   <Head />
   <body id="top">
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-xs focus:left-xs focus:z-[100] focus:rounded-xxs focus:bg-primary focus:p-xs focus:text-on-primary"
-    >
-      Skip to content
-    </a>
+    <Shader />
+    <GridLines />
     <Nav />
     <main id="main">
       <slot />
     </main>
-    <Footer />
+    <MediaViewer />
 
     <script>
       import { useFade } from '@/composables/useFade';
+      import { useGridCenter } from '@/composables/useGridCenter';
+      import { useSmoothScroll } from '@/composables/useSmoothScroll';
 
+      useGridCenter();
+      useSmoothScroll();
       useFade();
     </script>
   </body>

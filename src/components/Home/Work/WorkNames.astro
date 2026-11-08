@@ -1,0 +1,47 @@
+---
+
+import { projects } from '@/data/projects';
+
+const rows = projects.flatMap((project, index) => (index > 0 ? [null, project.title] : [project.title]));
+---
+
+<div class="relative col-span-3 cursor-grab touch-none select-none active:cursor-grabbing" data-work-names-drag>
+  <div class="border-line absolute inset-x-px top-0 border-t" data-work-names>
+    {rows.map((title) =>
+      title ? (
+        <h3
+          class="group border-line text-muted hover:text-foreground border-b bg-white font-primary uppercase transition-colors duration-300"
+          data-work-name
+        >
+          <!-- The active name isn't a link to click: it keeps the drag cursor of the list -->
+          <button
+            type="button"
+            class="row-title relative block w-full cursor-pointer text-left uppercase group-data-active:cursor-[inherit]"
+          >
+            {title}
+            <span
+              class="bg-foreground row-title absolute inset-0 text-white [clip-path:inset(0_100%_0_0)]"
+              aria-hidden="true"
+              data-work-name-invert
+            >
+              {title}
+            </span>
+            <!-- Over the invert: the hovered name, active or not, slides to the accent color
+                 (scripts/desktop.js) -->
+            <span
+              class="row-title absolute inset-0 bg-accent text-on-accent [clip-path:inset(0_100%_0_0)]"
+              aria-hidden="true"
+              data-work-name-hover
+            >
+              {title}
+            </span>
+          </button>
+        </h3>
+      ) : (
+        <div class="border-line row-title border-b " aria-hidden="true">
+          &nbsp;
+        </div>
+      )
+    )}
+  </div>
+</div>

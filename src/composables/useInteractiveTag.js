@@ -14,14 +14,14 @@ export const interactiveTagProps = {
 };
 
 /**
- * Determines whether the underlying interactive element should be an <a/>, a <button/> or something else
+ * Determines whether the underlying interactive element should be an <a/>, a <button/> or the
+ * `overrideTag`
  *
  * Accepts props, refs, getters or plain values
  */
 export function useInteractiveTag(options) {
   const to = computed(() => toValue(options.to));
   const overrideTag = computed(() => toValue(options.overrideTag));
-  const defaultTag = computed(() => toValue(options.defaultTag) ?? 'button');
   const disabled = computed(() => toValue(options.disabled));
 
   const opensNewWindow = computed(() => {
@@ -34,9 +34,7 @@ export function useInteractiveTag(options) {
     if (overrideTag.value) return overrideTag.value;
 
     // A disabled link can't be navigated to, so it's rendered as a disabled button
-    if (to.value && !disabled.value) return 'a';
-
-    return defaultTag.value;
+    return to.value && !disabled.value ? 'a' : 'button';
   });
 
   const props = computed(() => {
@@ -49,11 +47,7 @@ export function useInteractiveTag(options) {
       };
     }
 
-    if (tag.value === 'button') {
-      return { type: 'button', disabled: disabled.value || undefined };
-    }
-
-    return {};
+    return { type: 'button', disabled: disabled.value || undefined };
   });
 
   return { tag, props, opensNewWindow };

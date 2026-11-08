@@ -1,23 +1,42 @@
 ---
 /**
- * Sticky top bar: your name (back to top) and the section anchors from src/data/site.js
+ * Top bar: your initials (back to top), the section anchors and the language picker from src/data/site.js
  */
-import { nav, profile } from '@/data/site';
+import { languages, nav, profile } from '@/data/site';
+import Icon from '@/components/Common/Icon.vue';
 ---
 
-<header class="bg-background/85 sticky top-0 z-50 backdrop-blur-md">
-  <nav class="container-page flex h-16 items-center justify-between gap-xs" aria-label="Main">
-    <a href="#top" class="text-button font-medium transition-opacity hover:opacity-70">{profile.name}</a>
-    <ul class="flex items-center gap-s">
-      {
-        nav.map((link) => (
-          <li>
-            <a href={link.to} class="text-button text-muted transition-colors hover:text-foreground">
-              {link.label}
-            </a>
-          </li>
-        ))
-      }
+<header>
+  <nav class="container-page grid-layout-12 items-start pt-xxs" aria-label="Main">
+    <!-- Every item starts a cell in from its grid line, like the text below (--spacing-cell) -->
+    <a
+      href="#top"
+      class="col-span-3 px-cell md:col-span-1 transition-colors duration-(--duration-fast) hover:text-accent"
+      aria-label={`${profile.name}, back to top`}
+    >
+      {profile.initials}
+    </a>
+
+    <ul class="col-span-6 flex gap-s px-cell md:col-span-5">
+      {nav.map((link) => (
+        <li>
+          <a href={link.to} class="transition-colors duration-(--duration-fast) hover:text-accent">
+            {link.label}
+          </a>
+        </li>
+      ))}
     </ul>
+
+    <label class="col-span-3 flex flex-col items-end px-cell md:col-start-7 md:items-start">
+      <span class="text-caption text-muted">{languages.label}</span>
+      <span class="relative flex items-center gap-xxxs">
+        <select class="cursor-pointer appearance-none pr-xs">
+          {languages.options.map((option) => (
+            <option value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <Icon name="caret-down" class="pointer-events-none absolute right-0 size-2" />
+      </span>
+    </label>
   </nav>
 </header>

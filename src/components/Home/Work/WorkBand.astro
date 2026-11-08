@@ -1,0 +1,73 @@
+---
+
+import { projects, trials } from '@/data/projects';
+import { work } from '@/data/site';
+import { formatIndex } from '@/lib/format';
+import Text from '@/components/Common/Text.vue';
+
+const titles = [...projects.map((project) => project.title), trials.title];
+
+const numbers = ['00', ...projects.map((_, index) => formatIndex(index)), '  '];
+const digitStrips = [...numbers[0]].map((_, position) =>
+  numbers.flatMap((number, state) =>
+    state > 0 && numbers[state - 1][position] === number[position] ? [] : [{ digit: number[position], from: state }]
+  )
+);
+---
+
+<div class="pointer-events-none contents md:absolute md:inset-0 md:z-50 md:block md:px-page-x">
+  <div
+    class="pointer-events-none sticky top-[calc(100svh-10rem)] z-50 block md:mt-(--band-offset,0px)"
+    data-work-band
+    aria-hidden="true"
+  >
+  <div class="grid-layout-12">
+    <div class="col-span-12 grid grid-cols-subgrid max-md:gap-x-0 md:col-span-9 items-end">
+      <div class="border-ghost col-span-3 mx-px flex items-end  py-xxs max-md:mr-0 max-md:border-y">
+        <div class="text-ghost h-[1em] overflow-hidden text-display">
+          <!-- After the last project the number rolls away, to blank -->
+          <div class="flex" data-work-index>
+            {digitStrips.map((items) => (
+              <div class="relative flex flex-col" data-work-digit>
+                {items.map(({ digit, from }) => (
+                  <Text
+                    size="display"
+                    text={digit.trim() || ' '}
+                    class="block h-[1em] leading-none tabular-nums"
+                    data-from={from}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="border-line col-span-9 mx-px flex items-end border-y bg-white py-xxs max-md:ml-0 md:col-span-6 h-fit" data-work-band-label>
+        <div class="h-0 min-w-0 flex-1 overflow-hidden" data-work-titles>
+          <div class="relative flex flex-col items-start" data-work-title-strip>
+            <span class="block w-max pt-[0.04em] pb-[0.14em] [text-box:trim-both_cap_alphabetic]" data-work-title>
+              &nbsp;
+            </span>
+            {titles.map((title) => (
+              <Text
+                size="display"
+                text={title}
+                class="text-ghost block w-max whitespace-nowrap pt-[0.04em] pr-[0.08em] pb-[0.14em] uppercase [text-box:trim-both_cap_alphabetic]"
+                data-work-title
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative col-span-3 hidden md:block">
+      <div class="border-line absolute inset-x-0 bottom-0 mx-px flex items-baseline justify-between gap-xs border-y bg-white p-xxxs">
+        <Text size="caption" text={work.columns.media} />
+        <Text size="mono" text="" class="tabular-nums" data-work-media-count />
+      </div>
+    </div>
+  </div>
+</div>
+</div>

@@ -5,8 +5,8 @@
 import { Font } from 'astro:assets';
 import { site } from '@/data/site';
 
-// Akkurat Mono is self-hosted (see `fonts` in astro.config.mjs), only Inter comes from Google Fonts
-const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap';
+// DM Mono is self-hosted (see `fonts` in astro.config.mjs), only DM Sans is loaded from Google Fonts at runtime
+const FONTS_URL = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap';
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = site.ogImage ? new URL(site.ogImage, Astro.site) : null;
@@ -20,14 +20,16 @@ const ogImage = site.ogImage ? new URL(site.ogImage, Astro.site) : null;
   <link rel="canonical" href={canonical} />
 
   <!-- Only the regular is preloaded: it's the one the headings use above the fold -->
-  <Font cssVariable="--font-akkurat-mono" preload={[{ weight: '400', style: 'normal' }]} />
+  <Font cssVariable="--font-dm-mono" preload={[{ weight: '400', style: 'normal' }]} />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- Loaded as `print` then switched to `all`: it doesn't block the first render (`display=swap` shows the fallback meanwhile) -->
   <link rel="preload" as="style" href={FONTS_URL} />
   <link rel="stylesheet" href={FONTS_URL} media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href={FONTS_URL} /></noscript>
+  <noscript>
+    <link rel="stylesheet" href={FONTS_URL} />
+  </noscript>
 
   <title>{site.title}</title>
   <meta name="description" content={site.description} />

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1600" width="900" height="1600">
+<defs>
+  <filter id="blur-englobe-mobile" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="120"/></filter>
+  <filter id="grain-englobe-mobile"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.35 0"/></filter>
+  <linearGradient id="fade-englobe-mobile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1f1a" stop-opacity="0"/><stop offset="1" stop-color="#0b1f1a" stop-opacity="0.85"/></linearGradient>
+</defs>
+  <rect width="900" height="1600" fill="#0b1f1a"/>
+  <g filter="url(#blur-englobe-mobile)"><circle cx="367" cy="43" r="798.7826927636901" fill="#2fe39a" opacity="0.85"/><circle cx="835" cy="1498" r="450.8889412477965" fill="#c8ff5a" opacity="0.85"/><circle cx="19" cy="626" r="600.3102664148121" fill="#0a6b5c" opacity="0.85"/></g>
+  <rect width="900" height="1600" fill="url(#fade-englobe-mobile)"/>
+  
+    <g font-family="Helvetica Neue, Arial, sans-serif">
+      <rect x="72" y="80" width="756" height="1440" rx="81" fill="#0b1f1a" fill-opacity="0.55" stroke="#eafff4" stroke-opacity="0.35" stroke-width="3"/>
+      <text x="144" y="224.00000000000003" font-size="45" fill="#eafff4" letter-spacing="2">ENGLOBE</text>
+      <rect x="144" y="320" width="612" height="320" rx="36" fill="#2fe39a" opacity="0.9"/>
+      <text x="180" y="592" font-size="54" font-weight="700" fill="#eafff4">01</text><rect x="144" y="704" width="612" height="320" rx="36" fill="#c8ff5a" opacity="0.9"/>
+      <text x="180" y="976" font-size="54" font-weight="700" fill="#0b1f1a">02</text><rect x="144" y="1088" width="612" height="320" rx="36" fill="#0a6b5c" opacity="0.9"/>
+      <text x="180" y="1360" font-size="54" font-weight="700" fill="#eafff4">03</text>
+    </g>
+  <rect width="900" height="1600" filter="url(#grain-englobe-mobile)" opacity="0.5"/>
+</svg>
