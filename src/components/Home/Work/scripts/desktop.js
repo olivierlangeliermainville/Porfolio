@@ -310,23 +310,44 @@ export function initDesktop(section, band) {
         { signal }
       );
 
-      // The accent copy slides in on hover and out when the mouse leaves, like the invert. Not on
-      // the active name: it's already there
-      button.addEventListener(
-        'pointerenter',
-        (event) => {
-          if (event.pointerType === 'mouse' && !name.hasAttribute('data-active')) slideInvert(hovers[project], true);
-        },
-        { signal }
-      );
+      // A name scrolled away from under the cursor loses its hover
       button.addEventListener(
         'pointerleave',
         (event) => {
-          if (event.pointerType === 'mouse') slideInvert(hovers[project], false);
+          if (event.pointerType === 'mouse' && project === hoveredIndex) setHovered(-1);
         },
         { signal }
       );
     });
+
+    // Hover starts on a real mouse move only, not when scrolling slides a name under a still
+    // cursor (the browser then fires pointerenter, sometimes a pointermove at the same spot)
+    let lastPointer = { x: NaN, y: NaN };
+    dragArea.addEventListener(
+      'pointermove',
+      (event) => {
+        if (event.pointerType !== 'mouse') return;
+        if (event.clientX === lastPointer.x && event.clientY === lastPointer.y) return;
+        lastPointer = { x: event.clientX, y: event.clientY };
+        setHovered(names.indexOf(event.target.closest('[data-work-name]')));
+      },
+      { signal }
+    );
+  };
+
+  // The accent copy slides in on hover and out when the mouse leaves, like the invert. Not on
+  // the active name: it's already there
+  let hoveredIndex = -1;
+  const setHovered = (project) => {
+    if (project === hoveredIndex) return;
+    if (hoveredIndex >= 0) {
+      names[hoveredIndex].removeAttribute('data-hovered');
+      slideInvert(hovers[hoveredIndex], false);
+    }
+    hoveredIndex = project;
+    if (project < 0) return;
+    names[project].setAttribute('data-hovered', '');
+    if (!names[project].hasAttribute('data-active')) slideInvert(hovers[project], true);
   };
 
   const setupNameDrag = () => {

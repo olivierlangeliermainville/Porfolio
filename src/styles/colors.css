@@ -1,6 +1,10 @@
 /*
  * Palette. Components use the roles (background, foreground, primary...), not the raw colors,
  * so re-theming the site means changing the values here only.
+ *
+ * Dark is the default. The light theme overrides the roles under [data-theme="light"] on <html>,
+ * set before the first paint by the script in UI/Head.astro and switched by the toggle in UI/Nav.astro.
+ * Use the `light:` variant for anything else that differs, ex: light:hidden.
  */
 @theme static {
   --color-*: initial;
@@ -8,30 +12,52 @@
   --color-current: currentColor;
 
   /* Raw colors */
-  --color-ink: #16161a;
-  --color-paper: #ffffff;
-  --color-white: #ffffff;
-  --color-orange: #00ff91;
-  --color-grey: #8a8780;
+  --color-charcoal: #272727;
+  --color-white: #f4f4f4;
+  --color-ink: #2b2b2b;
+  --color-paper: #f1f1eb;
 
   /* Page */
-  --color-background: var(--color-paper);
-  --color-foreground: var(--color-ink);
+  --color-background: var(--color-charcoal);
+  --color-foreground: var(--color-white);
   /* Secondary text, captions */
-  --color-muted: rgb(22 22 26 / 0.6);
-  --color-border: rgb(22 22 26 / 0.15);
+  --color-muted: rgb(244 244 244 / 0.55);
+  --color-border: rgb(244 244 244 / 0.2);
   /* Lighter lines: the background grid and the section dividers */
-  --color-line: rgb(22 22 26 / 0.1);
-  /* The very large grey type behind content, ex: the name in the hero */
-  --color-ghost: #e3e3e3;
-  --color-focus: var(--color-orange);
+  --color-line: rgb(244 244 244 / 0.12);
+  /* The very large type behind content, ex: the name in the hero */
+  --color-ghost: #323232;
+  --color-focus: var(--color-white);
 
   /* Buttons */
-  --color-primary: var(--color-ink);
-  --color-on-primary: var(--color-paper);
-  --color-accent: var(--color-orange);
-  --color-on-accent: var(--color-ink);
+  --color-primary: var(--color-white);
+  --color-on-primary: var(--color-charcoal);
+  --color-accent: var(--color-white);
+  --color-on-accent: var(--color-charcoal);
 
   /* Shown behind images before they load */
-  --color-placeholder: #d9d9d9;
+  --color-placeholder: #333333;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-muted: rgb(43 43 43 / 0.6);
+  --color-border: rgb(43 43 43 / 0.2);
+  --color-line: rgb(43 43 43 / 0.16);
+  --color-ghost: #e4e4dc;
+  --color-focus: var(--color-ink);
+
+  --color-primary: var(--color-ink);
+  --color-on-primary: var(--color-paper);
+  --color-accent: var(--color-ink);
+  --color-on-accent: var(--color-paper);
+
+  --color-placeholder: #e2e2da;
 }

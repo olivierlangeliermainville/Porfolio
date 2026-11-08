@@ -15,14 +15,14 @@ const { title, index, invert = false } = Astro.props;
 const number = formatIndex(index);
 ---
 
-<h3 class="border-line row-title relative mx-px flex justify-between border-y bg-white font-primary uppercase">
+<h3 class="border-line row-title relative mx-px flex justify-between border-y bg-background font-primary uppercase">
   <span>{title}</span>
   <span class="text-muted" aria-hidden="true">
     {number}
   </span>
   {invert && (
     <span
-      class="row-title absolute inset-0 flex justify-between bg-foreground text-white [clip-path:inset(0_100%_0_0)]"
+      class="row-title absolute inset-0 flex justify-between bg-foreground text-background [clip-path:inset(0_100%_0_0)]"
       aria-hidden="true"
       data-name-row-invert
     >

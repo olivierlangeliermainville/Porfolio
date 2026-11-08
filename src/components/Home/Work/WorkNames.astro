@@ -10,7 +10,7 @@ const rows = projects.flatMap((project, index) => (index > 0 ? [null, project.ti
     {rows.map((title) =>
       title ? (
         <h3
-          class="group border-line text-muted hover:text-foreground border-b bg-white font-primary uppercase transition-colors duration-300"
+          class="group border-line text-muted data-hovered:text-foreground border-b bg-background font-primary uppercase transition-colors duration-300"
           data-work-name
         >
           <!-- The active name isn't a link to click: it keeps the drag cursor of the list -->
@@ -20,7 +20,7 @@ const rows = projects.flatMap((project, index) => (index > 0 ? [null, project.ti
           >
             {title}
             <span
-              class="bg-foreground row-title absolute inset-0 text-white [clip-path:inset(0_100%_0_0)]"
+              class="bg-foreground row-title absolute inset-0 text-background [clip-path:inset(0_100%_0_0)]"
               aria-hidden="true"
               data-work-name-invert
             >

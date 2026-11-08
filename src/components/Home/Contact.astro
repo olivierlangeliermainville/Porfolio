@@ -12,7 +12,7 @@ import Icon from '@/components/Common/Icon.vue';
 import Text from '@/components/Common/Text.vue';
 
 // Same look as the project infos (ProjectInfo.astro): a caption and a value on a line
-const ROW = 'border-line flex items-baseline justify-between gap-xs border-b bg-white p-xxxs';
+const ROW = 'border-line flex items-baseline justify-between gap-xs border-b bg-background p-xxxs';
 ---
 
 <!-- Ends on the page margin, like the nav starts -->
@@ -94,7 +94,7 @@ const ROW = 'border-line flex items-baseline justify-between gap-xs border-b bg-
   <!-- A white band between two lines like the hero's, over the grid lines, with the title in the
        shared display size (src/styles/fonts.css) in cqw of the page like the name, and pale like
        every big title -->
-  <div class="border-line relative z-50 border-y bg-white">
+  <div class="border-line relative z-50 border-y bg-background">
     <div class="container-page flex justify-center whitespace-nowrap @container" aria-hidden="true">
       <Text size="display" text={contact.title} class="text-ghost pt-[0.06em] text-display uppercase" />
     </div>

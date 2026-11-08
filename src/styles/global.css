@@ -5,6 +5,9 @@
 @import './spacing.css';
 @import './grid.css';
 
+/* Styles for the light theme only, ex: light:hidden (see colors.css) */
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+
 /* `hover:` that skips disabled and inert (`data-inert`) elements, ex: hover-enabled:bg-accent */
 @custom-variant hover-enabled {
   @media (hover: hover) {

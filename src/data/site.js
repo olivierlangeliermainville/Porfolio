@@ -105,6 +105,13 @@ export const nav = [
   { label: 'Contact', to: '#contact' }
 ];
 
+// Theme toggle in the nav: its label, and the name of each theme (the current one is shown)
+export const theme = {
+  label: 'Theme',
+  dark: 'Dark',
+  light: 'Light'
+};
+
 // Language picker in the nav. Not wired to anything yet: the site has a single language
 export const languages = {
   label: 'Language',

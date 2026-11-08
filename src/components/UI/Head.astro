@@ -19,6 +19,16 @@ const ogImage = site.ogImage ? new URL(site.ogImage, Astro.site) : null;
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="canonical" href={canonical} />
 
+  <!-- The theme, before the first paint: the one picked with the nav toggle, or the system's -->
+  <script is:inline>
+    let theme = null;
+    try {
+      theme = localStorage.getItem('theme');
+    } catch {}
+    document.documentElement.dataset.theme =
+      theme ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  </script>
+
   <!-- Only the regular is preloaded: it's the one the headings use above the fold -->
   <Font cssVariable="--font-dm-mono" preload={[{ weight: '400', style: 'normal' }]} />
 

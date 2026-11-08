@@ -38,7 +38,7 @@ import ProjectInfo from '../ProjectInfo.astro';
     <li class="group" data-work-mobile-project>
       <NameRow title={project.title} index={index} invert />
 
-      <div class="border-ghost overflow-hidden border-x bg-white px-page-x">
+      <div class="border-ghost overflow-hidden border-x bg-background px-page-x">
         {project.media?.length > 0 && (
           <div
             class="-mx-page-x mt-xxs flex snap-x snap-mandatory scroll-px-[calc(var(--spacing-page-x)+1px)] gap-gutter overflow-x-auto px-[calc(var(--spacing-page-x)+1px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -75,7 +75,7 @@ import ProjectInfo from '../ProjectInfo.astro';
         )}
       </div>
 
-      <ProjectInfo project={project} class="border-line mx-px mt-xxs border-y bg-white pb-xxs" />
+      <ProjectInfo project={project} class="border-line mx-px mt-xxs border-y bg-background pb-xxs" />
     </li>
   ))}
 </ol>

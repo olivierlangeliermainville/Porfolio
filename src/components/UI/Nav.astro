@@ -1,8 +1,9 @@
 ---
 /**
- * Top bar: your initials (back to top), the section anchors and the language picker from src/data/site.js
+ * Top bar: your initials (back to top), the section anchors, the language picker and the theme
+ * toggle, from src/data/site.js
  */
-import { languages, nav, profile } from '@/data/site';
+import { languages, nav, profile, theme } from '@/data/site';
 import Icon from '@/components/Common/Icon.vue';
 ---
 
@@ -38,5 +39,30 @@ import Icon from '@/components/Common/Icon.vue';
         <Icon name="caret-down" class="pointer-events-none absolute right-0 size-2" />
       </span>
     </label>
+
+    <!-- Shows the current theme, the light: variant swaps the names without waiting for the script -->
+    <button
+      type="button"
+      class="group col-span-3 col-start-10 flex cursor-pointer flex-col items-end px-cell md:items-start"
+      data-theme-toggle
+    >
+      <span class="text-caption text-muted">{theme.label}</span>
+      <span class="transition-colors duration-(--duration-fast) group-hover:text-accent">
+        <span class="light:hidden">{theme.dark}</span>
+        <span class="hidden light:inline">{theme.light}</span>
+      </span>
+    </button>
   </nav>
 </header>
+
+<script>
+  // Saved for the next visits (read back in UI/Head.astro). The Shader follows the attribute
+  document.querySelector('[data-theme-toggle]')!.addEventListener('click', () => {
+    const root = document.documentElement;
+    const theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.dataset.theme = theme;
+    try {
+      localStorage.setItem('theme', theme);
+    } catch {}
+  });
+</script>

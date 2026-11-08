@@ -13,7 +13,7 @@ const [roleStart, roleEnd] = profile.role.split(' + ');
   <div class="min-h-xl flex-1"></div>
 
   <!-- Content centered so it stays in the middle while the intro grows the band (see script) -->
-  <div hero-container class="border-line z-50 flex flex-col justify-center border-y bg-white">
+  <div hero-container class="border-line z-50 flex flex-col justify-center border-y bg-background">
     <div class="container-page grid-layout-12 items-center text-center @container md:text-left">
       <h1 class="sr-only">{profile.name}</h1>
 
@@ -23,7 +23,7 @@ const [roleStart, roleEnd] = profile.role.split(' + ');
         size="display"
         text={profile.displayName}
         aria-hidden="true"
-        class="text-ghost col-span-12 col-start-1 row-start-1 hidden pt-[0.015em] text-center text-display whitespace-nowrap uppercase md:block"
+        class="text-ghost select-none col-span-12 col-start-1 row-start-1 hidden pt-[0.015em] text-center text-display whitespace-nowrap uppercase md:block"
       />
       {[...profile.initials].map((letter, index) => (
         <Text

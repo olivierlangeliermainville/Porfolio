@@ -213,10 +213,13 @@
 
     gl.uniform1i(uniforms.cells, CELLS ? 1 : 0);
 
-    // The foreground token, a hex color (see colors.css)
-    const hex = getComputedStyle(document.documentElement).getPropertyValue('--color-foreground').trim();
-    const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-    gl.uniform3f(uniforms.color, rgb[0], rgb[1], rgb[2]);
+    // The foreground token, a hex color (see colors.css), read again when the theme changes
+    const setColor = () => {
+      const hex = getComputedStyle(document.documentElement).getPropertyValue('--color-foreground').trim();
+      const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+      gl.uniform3f(uniforms.color, rgb[0], rgb[1], rgb[2]);
+    };
+    setColor();
 
     // The pointer, in screen heights from the center (the shader's uv), and where it passed: x, y
     // pairs and the time of each, newest first. Never passed: already faded. `left`: the pointer
@@ -320,6 +323,13 @@
       if (!event.relatedTarget) pointer.left = true;
     });
     window.addEventListener('blur', () => (pointer.left = true));
+
+    // The theme toggle (UI/Nav.astro) flips data-theme on <html>: rendered right away, in case the
+    // loop is paused (reduced motion)
+    new MutationObserver(() => {
+      setColor();
+      render();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     // The sprite isn't a power of 2: no mipmaps, clamped edges (required by WebGL 1)
     const image = new Image();
