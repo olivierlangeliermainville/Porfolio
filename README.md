@@ -22,7 +22,7 @@ yarn dev       # http://localhost:4321
 
 | File                   | What's in it                                                               |
 | ---------------------- | -------------------------------------------------------------------------- |
-| `src/data/site.js`     | SEO, your name/role/intro, every section's labels, socials, nav, languages |
+| `src/data/site.js`     | SEO, your name/role/intro, every section's labels, socials, nav, theme |
 | `src/data/projects.js` | The featured `projects` (in display order) and the `trials` list           |
 
 To add a project, copy an object in `projects.js`:

@@ -111,12 +111,3 @@ export const theme = {
   dark: 'Dark',
   light: 'Light'
 };
-
-// Language picker in the nav. Not wired to anything yet: the site has a single language
-export const languages = {
-  label: 'Language',
-  options: [
-    { label: 'English', value: 'en' },
-    { label: 'Français', value: 'fr' }
-  ]
-};

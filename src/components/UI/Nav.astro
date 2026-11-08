@@ -1,10 +1,9 @@
 ---
 /**
- * Top bar: your initials (back to top), the section anchors, the language picker and the theme
- * toggle, from src/data/site.js
+ * Top bar: your initials (back to top), the section anchors and the theme toggle, from
+ * src/data/site.js
  */
-import { languages, nav, profile, theme } from '@/data/site';
-import Icon from '@/components/Common/Icon.vue';
+import { nav, profile, theme } from '@/data/site';
 ---
 
 <header>
@@ -27,18 +26,6 @@ import Icon from '@/components/Common/Icon.vue';
         </li>
       ))}
     </ul>
-
-    <label class="col-span-3 flex flex-col items-end px-cell md:col-start-7 md:items-start">
-      <span class="text-caption text-muted">{languages.label}</span>
-      <span class="relative flex items-center gap-xxxs">
-        <select class="cursor-pointer appearance-none pr-xs">
-          {languages.options.map((option) => (
-            <option value={option.value}>{option.label}</option>
-          ))}
-        </select>
-        <Icon name="caret-down" class="pointer-events-none absolute right-0 size-2" />
-      </span>
-    </label>
 
     <!-- Shows the current theme, the light: variant swaps the names without waiting for the script -->
     <button
